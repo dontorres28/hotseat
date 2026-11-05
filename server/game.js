@@ -1,0 +1,223 @@
+// In-memory game state. Party games are ephemeral — a room lives in RAM and
+// dies when it empties. No database for v1.
+// ponytail: in-memory single-process store; move rooms to Redis only if you run
+// more than one server instance.
+
+import { promptsForMode, shuffled, CHALLENGES, WILDCARDS, CONSENT_MODES } from './content.js';
+
+const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no easily-confused chars
+const rooms = new Map(); // code -> room
+const EMPTY_GRACE_MS = 2 * 60 * 1000; // keep a room this long after it empties, for reconnects
+
+function makeCode() {
+  let code;
+  do {
+    code = Array.from({ length: 4 }, () => CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]).join('');
+  } while (rooms.has(code));
+  return code;
+}
+
+function makeId() {
+  return Math.random().toString(36).slice(2, 10);
+}
+
+export function createRoom(mode) {
+  const code = makeCode();
+  const room = {
+    code,
+    mode,
+    hostId: null,
+    phase: 'lobby',
+    round: 0,
+    players: new Map(), // id -> player
+    deck: shuffled(promptsForMode(mode)),
+    deckIndex: 0,
+    prompt: null,
+    wildcard: null,
+    submissions: new Map(), // playerId -> { voteFor, predict }
+    usedChallenges: new Set(),
+    lastReveal: null,
+    emptyTimer: null,
+  };
+  rooms.set(code, room);
+  return room;
+}
+
+export function getRoom(code) {
+  return rooms.get((code || '').toUpperCase());
+}
+
+export function addPlayer(room, name, { host = false } = {}) {
+  const id = makeId();
+  const player = {
+    id,
+    name: name.trim().slice(0, 20) || 'Player',
+    connected: true,
+    consented: !CONSENT_MODES.includes(room.mode),
+    timesInHotSeat: 0,
+    correctPredictions: 0,
+    sips: 0,
+  };
+  room.players.set(id, player);
+  if (host || !room.hostId) room.hostId = id;
+  if (room.emptyTimer) { clearTimeout(room.emptyTimer); room.emptyTimer = null; }
+  return player;
+}
+
+export function removePlayer(room, playerId) {
+  const p = room.players.get(playerId);
+  if (p) p.connected = false;
+  // Hand host off to any still-connected player.
+  if (room.hostId === playerId) {
+    const next = [...room.players.values()].find((x) => x.connected && x.id !== playerId);
+    room.hostId = next ? next.id : room.hostId;
+  }
+  // If everyone is gone, schedule cleanup.
+  if (![...room.players.values()].some((x) => x.connected)) {
+    room.emptyTimer = setTimeout(() => rooms.delete(room.code), EMPTY_GRACE_MS);
+  }
+}
+
+export function allConsented(room) {
+  return [...room.players.values()].filter((p) => p.connected).every((p) => p.consented);
+}
+
+function activePlayers(room) {
+  return [...room.players.values()].filter((p) => p.connected);
+}
+
+export function dealPrompt(room) {
+  if (room.deckIndex >= room.deck.length) {
+    room.deck = shuffled(room.deck); // reshuffle, keep playing
+    room.deckIndex = 0;
+  }
+  room.round += 1;
+  room.prompt = room.deck[room.deckIndex++];
+  room.submissions = new Map();
+  // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
+  const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
+  room.wildcard = roll ? WILDCARDS[Math.floor(Math.random() * WILDCARDS.length)] : null;
+  room.phase = 'prompt';
+  room.lastReveal = null;
+}
+
+export function submit(room, playerId, voteFor, predict) {
+  const players = activePlayers(room);
+  const ids = new Set(players.map((p) => p.id));
+  // You can't vote for yourself; prediction can be anyone.
+  if (!ids.has(voteFor) || voteFor === playerId) {
+    const others = players.filter((p) => p.id !== playerId);
+    voteFor = others.length ? others[0].id : playerId;
+  }
+  if (!ids.has(predict)) predict = voteFor;
+  room.submissions.set(playerId, { voteFor, predict });
+}
+
+export function everyoneSubmitted(room) {
+  const players = activePlayers(room);
+  return players.length > 0 && players.every((p) => room.submissions.has(p.id));
+}
+
+function drawChallenge(room) {
+  const pool = CHALLENGES.filter((c) => !room.usedChallenges.has(c));
+  const pick = (pool.length ? pool : CHALLENGES)[Math.floor(Math.random() * (pool.length || CHALLENGES.length))];
+  room.usedChallenges.add(pick);
+  if (room.usedChallenges.size >= CHALLENGES.length) room.usedChallenges.clear();
+  return pick;
+}
+
+// Tally votes, decide the hot seat, assign penalties, update running stats.
+export function reveal(room) {
+  const players = activePlayers(room);
+  const counts = new Map(players.map((p) => [p.id, 0]));
+  for (const { voteFor } of room.submissions.values()) {
+    counts.set(voteFor, (counts.get(voteFor) || 0) + 1);
+  }
+  const wc = room.wildcard?.id;
+
+  // Hot seat target: most-picked normally, least-picked under MINORITY.
+  const entries = [...counts.entries()];
+  const pickMinority = wc === 'minority';
+  let best = pickMinority ? Infinity : -1;
+  for (const [, n] of entries) {
+    if (pickMinority ? n < best : n > best) best = n;
+  }
+  const tied = entries.filter(([, n]) => n === best).map(([id]) => id);
+  const targetId = tied[Math.floor(Math.random() * tied.length)];
+  const target = room.players.get(targetId);
+  if (target) target.timesInHotSeat += 1;
+
+  const doubled = wc === 'double';
+  const reversed = wc === 'reverse';
+
+  const results = players.map((p) => {
+    const sub = room.submissions.get(p.id);
+    const readRight = sub && sub.predict === targetId; // did they read the room?
+    if (readRight) p.correctPredictions += 1;
+    // Who drinks: wrong readers normally; under REVERSE the right readers drink.
+    const drinks = reversed ? !!readRight : !readRight;
+    let sips = 0;
+    if (drinks) { sips = doubled ? 2 : 1; p.sips += sips; }
+    return { id: p.id, name: p.name, predict: sub?.predict ?? null, readRight: !!readRight, sips };
+  });
+
+  // The hot seat always takes the heat, with a challenge.
+  const challenge = drawChallenge(room);
+  if (target) target.sips += 1;
+
+  room.phase = 'reveal';
+  room.lastReveal = {
+    prompt: room.prompt,
+    wildcard: room.wildcard,
+    round: room.round,
+    // Only vote *counts* are shown — who voted for whom stays secret (that's the
+    // deferred "Exposed Card" reveal).
+    breakdown: entries
+      .map(([id, n]) => ({ name: room.players.get(id)?.name, votes: n }))
+      .sort((a, b) => b.votes - a.votes),
+    targetId,
+    targetName: target?.name,
+    challenge,
+    results,
+  };
+  return room.lastReveal;
+}
+
+export function recap(room) {
+  room.phase = 'recap';
+  const players = [...room.players.values()];
+  const award = (key) => {
+    const max = Math.max(0, ...players.map((p) => p[key]));
+    return max > 0 ? players.filter((p) => p[key] === max).map((p) => p.name) : [];
+  };
+  return {
+    rounds: room.round,
+    awards: [
+      { title: 'Most Roasted', emoji: '🔥', winners: award('timesInHotSeat'), stat: 'times in the hot seat' },
+      { title: 'Best Mind Reader', emoji: '🔮', winners: award('correctPredictions'), stat: 'rooms read right' },
+      { title: 'The Tank', emoji: '🍺', winners: award('sips'), stat: 'sips taken' },
+    ],
+    scoreboard: players
+      .map((p) => ({ name: p.name, reads: p.correctPredictions, hotseat: p.timesInHotSeat, sips: p.sips }))
+      .sort((a, b) => b.reads - a.reads),
+  };
+}
+
+// Public snapshot sent to every client. Never leaks individual votes.
+export function snapshot(room) {
+  return {
+    code: room.code,
+    mode: room.mode,
+    phase: room.phase,
+    round: room.round,
+    hostId: room.hostId,
+    needsConsent: CONSENT_MODES.includes(room.mode),
+    players: [...room.players.values()].map((p) => ({
+      id: p.id, name: p.name, connected: p.connected, consented: p.consented,
+    })),
+    prompt: room.phase === 'prompt' ? room.prompt : null,
+    wildcard: room.phase === 'prompt' ? room.wildcard : null,
+    submittedIds: room.phase === 'prompt' ? [...room.submissions.keys()] : [],
+    reveal: room.phase === 'reveal' ? room.lastReveal : null,
+  };
+}
