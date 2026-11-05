@@ -34,8 +34,8 @@ body {
     var(--black);
   background-attachment: fixed;
   color: var(--cream);
-  font-family: Inter, system-ui, sans-serif;
-  font-weight: 600;
+  font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
+  font-weight: 500;
   overscroll-behavior: none;
 }
 
@@ -63,7 +63,7 @@ body {
 .logo { width: 210px; max-width: 70vw; height: auto; display: block; }
 .logo-sm { width: 76px; }
 
-.tagline { text-align: center; color: var(--muted); font-weight: 800; font-size: 15px; margin-top: 4px; }
+.tagline { text-align: center; color: var(--muted); font-weight: 700; font-size: 15px; margin-top: 4px; }
 
 /* --- Inputs --- */
 .field {
@@ -96,7 +96,7 @@ body {
 .seg[data-active="join"] .seg-ind { transform: translateX(100%); }
 .seg-btn {
   position: relative; z-index: 1; background: none; border: none; font: inherit;
-  font-weight: 800; font-size: 15px; padding: 12px; color: var(--muted);
+  font-weight: 700; font-size: 15px; padding: 12px; color: var(--muted);
   transition: color 0.3s var(--ease);
 }
 .seg[data-active="start"] .seg-btn:nth-of-type(1),
@@ -110,7 +110,7 @@ body {
 }
 .mode-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
 .mode strong { font-size: 18px; letter-spacing: -0.01em; }
-.mode-txt span { color: var(--muted); font-size: 13px; font-weight: 600; }
+.mode-txt span { color: var(--muted); font-size: 13px; font-weight: 500; }
 .mode.on { border-color: var(--red); background: #1e1513; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 22px rgba(232, 53, 43, 0.16); }
 /* Crafted selection check — scales in with a subtle overshoot. */
 .mode-check {
@@ -129,7 +129,7 @@ body {
 /* --- Buttons --- */
 .btn {
   width: 100%; padding: 17px; border-radius: 14px; border: none; font: inherit;
-  font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;
+  font-weight: 700; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;
 }
 .btn.primary { background: var(--red); color: var(--cream); box-shadow: 0 10px 26px rgba(232, 53, 43, 0.34); }
 .btn.primary:disabled { background: #3a2320; color: #8a6a66; box-shadow: none; }
@@ -137,8 +137,8 @@ body {
 .row { display: flex; gap: 10px; }
 .row .btn { flex: 1; }
 
-.error { color: var(--red); text-align: center; font-weight: 800; }
-.fine { color: var(--muted); font-size: 12px; text-align: center; font-weight: 600; margin-top: auto; }
+.error { color: var(--red); text-align: center; font-weight: 700; }
+.fine { color: var(--muted); font-size: 12px; text-align: center; font-weight: 500; margin-top: auto; }
 
 /* --- Lobby --- */
 .topbar { display: flex; align-items: center; justify-content: space-between; }
@@ -151,7 +151,7 @@ body {
 .bigcode:active { transform: skewX(-6deg) scale(0.96); }
 .share-hint { font-size: 13px; }
 .players { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-.chip { background: var(--card); border: 2px solid var(--line); padding: 10px 14px; border-radius: 999px; font-weight: 800; }
+.chip { background: var(--card); border: 2px solid var(--line); padding: 10px 14px; border-radius: 999px; font-weight: 700; }
 .chip.off { opacity: 0.4; }
 
 /* --- Prompt packs --- */
@@ -166,7 +166,7 @@ body {
 .pack-meta span { font-size: 12px; }
 .pack-btn {
   background: transparent; border: 2px solid var(--line); color: var(--cream);
-  font: inherit; font-weight: 800; padding: 9px 14px; border-radius: 10px; min-width: 76px;
+  font: inherit; font-weight: 700; padding: 9px 14px; border-radius: 10px; min-width: 76px;
 }
 .pack-btn.on { background: var(--red); border-color: var(--red); }
 .pack-btn.buy { background: var(--cream); color: var(--black); border-color: var(--cream); }
@@ -174,17 +174,17 @@ body {
 
 /* --- Round --- */
 .round-head { display: flex; justify-content: space-between; align-items: center; }
-.round-n { color: var(--muted); font-weight: 800; letter-spacing: 1px; text-transform: uppercase; }
-.wild { color: var(--red); font-weight: 800; }
-.wild-banner { background: var(--red); color: var(--cream); padding: 10px 14px; border-radius: 12px; font-weight: 800; text-align: center; }
+.round-n { color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+.wild { color: var(--red); font-weight: 700; }
+.wild-banner { background: var(--red); color: var(--cream); padding: 10px 14px; border-radius: 12px; font-weight: 700; text-align: center; }
 .prompt { font-family: Anton, sans-serif; font-size: 30px; line-height: 1.05; transform: skewX(-3deg); }
-.prompt.sm { font-size: 20px; transform: none; font-family: Inter, sans-serif; font-weight: 800; color: var(--muted); }
-.label { font-weight: 800; font-size: 15px; margin-top: 6px; }
+.prompt.sm { font-size: 20px; transform: none; font-family: 'Satoshi', system-ui, sans-serif; font-weight: 700; color: var(--muted); }
+.label { font-weight: 700; font-size: 15px; margin-top: 6px; }
 
 .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .pick {
   background: var(--card); border: 2px solid var(--line); color: var(--cream); padding: 15px 10px;
-  border-radius: 12px; font: inherit; font-weight: 800; font-size: 16px;
+  border-radius: 12px; font: inherit; font-weight: 700; font-size: 16px;
 }
 .pick.red.on { background: var(--red); border-color: var(--red); color: var(--cream); }
 .pick.cream.on { background: var(--cream); border-color: var(--cream); color: var(--black); }
@@ -200,7 +200,7 @@ body {
 @keyframes pop { from { opacity: 0; transform: skewX(-5deg) scale(0.5); } to { opacity: 1; transform: skewX(-5deg) scale(1); } }
 .bars { display: flex; flex-direction: column; gap: 8px; }
 .bar-row { display: flex; align-items: center; gap: 10px; }
-.bar-name { width: 80px; font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bar-name { width: 80px; font-weight: 700; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bar-track { flex: 1; background: var(--card); border-radius: 8px; height: 22px; overflow: hidden; border: 1px solid var(--line); }
 /* Animate transform (GPU) instead of width (layout+paint). --w is the 0..1 ratio. */
 .bar-fill {
@@ -208,7 +208,7 @@ body {
   animation: grow 0.55s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms);
 }
 @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(var(--w, 1)); } }
-.bar-votes { width: 20px; text-align: right; color: var(--muted); font-weight: 800; }
+.bar-votes { width: 20px; text-align: right; color: var(--muted); font-weight: 700; }
 
 .verdict { border-radius: 16px; padding: 18px; text-align: center; }
 .verdict strong { font-size: 20px; display: block; }
@@ -233,7 +233,7 @@ body {
 .exposed-row .arrow { color: var(--muted); }
 .exposed-row strong { color: #e8c24a; }
 
-.earned { text-align: center; color: #e8c24a; font-weight: 800; }
+.earned { text-align: center; color: #e8c24a; font-weight: 700; }
 .spend { display: flex; flex-direction: column; gap: 8px; }
 
 .toast {
@@ -252,11 +252,11 @@ body {
 .award { display: flex; gap: 14px; align-items: center; background: var(--card); border: 2px solid var(--line); border-radius: 14px; padding: 14px; }
 .award-emoji { font-size: 34px; }
 .award strong { font-size: 17px; }
-.award-win { color: var(--red); font-weight: 800; font-size: 18px; }
+.award-win { color: var(--red); font-weight: 700; font-size: 18px; }
 .award span.muted { font-size: 12px; }
 
 .score { width: 100%; border-collapse: collapse; }
 .score th, .score td { text-align: left; padding: 10px; border-bottom: 1px solid var(--line); }
 .score th { color: var(--muted); font-size: 13px; text-transform: uppercase; }
-.score td { font-weight: 800; }
+.score td { font-weight: 700; }
 .score th:not(:first-child), .score td:not(:first-child) { text-align: center; }
