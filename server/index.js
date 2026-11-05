@@ -46,6 +46,7 @@ io.on('connection', (socket) => {
   socket.on('createRoom', ({ name, mode }, ack) => {
     if (!MODES.includes(mode)) mode = 'chill';
     const room = game.createRoom(mode);
+    if (!room) return ack?.({ ok: false, error: 'Server is busy right now. Try again in a moment.' });
     const player = game.addPlayer(room, name, { host: true });
     ack?.({ ok: true, code: room.code, playerId: player.id });
     join(room, player);
@@ -137,11 +138,17 @@ io.on('connection', (socket) => {
   // Personal "not drinking? swap for a dare" — returns a non-drinking dare.
   socket.on('swapDare', (_data, ack) => ack?.(game.randomDare()));
 
+  // After a player leaves: if the rest are all in, don't stall — reveal.
+  const afterLeave = (room) => {
+    if (room.phase === 'prompt' && game.everyoneSubmitted(room)) game.reveal(room);
+    broadcast(room);
+  };
+
   // Explicit leave — remove the player and free their slot.
   socket.on('leaveRoom', (_data, ack) => {
     if (bound) {
       const room = game.getRoom(bound.code);
-      if (room) { game.removePlayer(room, bound.playerId); socket.leave(room.code); broadcast(room); }
+      if (room) { game.removePlayer(room, bound.playerId); socket.leave(room.code); afterLeave(room); }
       bound = null;
     }
     ack?.({ ok: true });
@@ -150,7 +157,7 @@ io.on('connection', (socket) => {
   socket.on('disconnect', () => {
     if (!bound) return;
     const room = game.getRoom(bound.code);
-    if (room) { game.removePlayer(room, bound.playerId); broadcast(room); }
+    if (room) { game.removePlayer(room, bound.playerId); afterLeave(room); }
   });
 });
 

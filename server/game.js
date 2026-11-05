@@ -3,7 +3,7 @@
 // ponytail: in-memory single-process store; move rooms to Redis only if you run
 // more than one server instance.
 
-import { promptsForMode, shuffled, CHALLENGES, DARES, WILDCARDS, CONSENT_MODES, PACKS, packById } from './content.js';
+import { promptsForMode, shuffled, CHALLENGES, DARES, WILDCARDS, CONSENT_MODES, PACKS, packById, challengeMinPlayers } from './content.js';
 
 export function randomDare() {
   return DARES[Math.floor(Math.random() * DARES.length)];
@@ -12,6 +12,7 @@ export function randomDare() {
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no easily-confused chars
 const rooms = new Map(); // code -> room
 const EMPTY_GRACE_MS = 2 * 60 * 1000; // keep a room this long after it empties, for reconnects
+const MAX_ROOMS = 5000; // ponytail: single-process memory guard; raise or move to Redis if you scale out
 
 function makeCode() {
   let code;
@@ -26,6 +27,7 @@ function makeId() {
 }
 
 export function createRoom(mode) {
+  if (rooms.size >= MAX_ROOMS) return null;
   const code = makeCode();
   const room = {
     code,
@@ -51,7 +53,7 @@ export function createRoom(mode) {
 }
 
 export function getRoom(code) {
-  return rooms.get((code || '').toUpperCase());
+  return rooms.get(String(code || '').toUpperCase());
 }
 
 // Rebuild the deck from the mode plus any unlocked+enabled packs. Called at
@@ -95,7 +97,7 @@ export function addPlayer(room, name, { host = false } = {}) {
   const id = makeId();
   const player = {
     id,
-    name: name.trim().slice(0, 20) || 'Player',
+    name: String(name ?? '').trim().slice(0, 20) || 'Player',
     connected: true,
     consented: !CONSENT_MODES.includes(room.mode),
     socketId: null,
@@ -208,10 +210,14 @@ export function everyoneSubmitted(room) {
 }
 
 function drawChallenge(room) {
-  const pool = CHALLENGES.filter((c) => !room.usedChallenges.has(c));
-  const pick = (pool.length ? pool : CHALLENGES)[Math.floor(Math.random() * (pool.length || CHALLENGES.length))];
+  const n = connectedCount(room);
+  const fit = CHALLENGES.filter((c) => challengeMinPlayers(c) <= n); // only ones that make sense for this group size
+  const fresh = fit.filter((c) => !room.usedChallenges.has(c));
+  const from = fresh.length ? fresh : fit;
+  const pick = from[Math.floor(Math.random() * from.length)];
   room.usedChallenges.add(pick);
-  if (room.usedChallenges.size >= CHALLENGES.length) room.usedChallenges.clear();
+  // Reset once we've worked through what fits.
+  if (room.usedChallenges.size >= fit.length) room.usedChallenges.clear();
   return pick;
 }
 

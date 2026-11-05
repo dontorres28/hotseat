@@ -211,7 +211,7 @@ body {
 .packs-ro { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
 
 /* --- Round --- */
-.round-head { display: flex; justify-content: space-between; align-items: center; }
+.round-head { display: flex; justify-content: center; align-items: center; gap: 10px; padding: 0 56px; }
 .round-n { color: var(--muted); font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
 .wild { color: var(--red); font-weight: 700; }
 .wild-banner { background: var(--red); color: var(--cream); padding: 10px 14px; border-radius: 12px; font-weight: 700; text-align: center; }

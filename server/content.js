@@ -109,6 +109,14 @@ export function packById(id) {
   return PACKS.find((p) => p.id === id) || null;
 }
 
+// A challenge that leans on a crowd (everyone/waterfall/go-around) needs 3+
+// players to make sense; the rest work with 2. ponytail: keyword heuristic, not
+// per-challenge tags — tag individually if a phrase slips through.
+const CROWD_RE = /\b(everyone|the room|the group|waterfall|social|nose goes|go around|first to blank|youngest|oldest|tallest|house rule|bartender)\b/i;
+export function challengeMinPlayers(text) {
+  return CROWD_RE.test(text) ? 3 : 2;
+}
+
 // Wildcard rules that can flip a round. Each has an id, label, and how it scores.
 export const WILDCARDS = [
   { id: 'minority', label: 'MINORITY WINS: the least-picked person is in the hot seat.' },

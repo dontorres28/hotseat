@@ -1,7 +1,20 @@
 // Run: node game.test.js  — plain asserts, no framework.
 import assert from 'node:assert';
 import * as game from './game.js';
-import { CHALLENGES } from './content.js';
+import { CHALLENGES, challengeMinPlayers } from './content.js';
+
+// Challenge fit: crowd challenges need 3+, and a 2-player game never draws one.
+{
+  assert.equal(challengeMinPlayers('Waterfall: everyone drinks.'), 3, 'crowd challenge needs 3+');
+  assert.equal(challengeMinPlayers('Take a sip.'), 2, 'simple challenge works with 2');
+  const r = game.createRoom('duel');
+  const a = game.addPlayer(r, 'A', { host: true });
+  const b = game.addPlayer(r, 'B');
+  game.dealPrompt(r); r.pair = [a.id, b.id];
+  game.submit(r, a.id, a.id); game.submit(r, b.id, a.id);
+  const rev = game.reveal(r);
+  assert.ok(challengeMinPlayers(rev.challenge) <= 2, `2-player challenge must fit 2, got: ${rev.challenge}`);
+}
 
 // Challenge deck: 100+, no duplicates.
 {
