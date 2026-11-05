@@ -2,10 +2,10 @@ import { useEffect, useRef, useState } from 'react';
 import { socket } from './socket.js';
 
 const MODES = [
-  { id: 'chill', name: 'Chill', blurb: 'Clean and silly. Good for mixed groups.' },
-  { id: 'roast', name: 'Roast', blurb: 'Savage but friendly. All about the room.' },
-  { id: 'spicy', name: 'Spicy', blurb: 'After dark. Every phone opts in first.' },
-  { id: 'chaos', name: 'Chaos', blurb: 'Everything mixed, plus wildcard rounds.' },
+  { id: 'chill', name: 'Chill', emoji: '😎', blurb: 'Clean and silly. Good for mixed groups.' },
+  { id: 'roast', name: 'Roast', emoji: '🔥', blurb: 'Savage but friendly. All about the room.' },
+  { id: 'spicy', name: 'Spicy', emoji: '🌶️', blurb: 'After dark. Every phone opts in first.' },
+  { id: 'chaos', name: 'Chaos', emoji: '🎲', blurb: 'Everything mixed, plus wildcard rounds.' },
 ];
 
 const LS = 'hotseat.session';
@@ -82,10 +82,11 @@ function Logo({ small }) {
 }
 
 function Home({ setError, error }) {
-  const [tab, setTab] = useState('start'); // start | join
+  const invited = new URLSearchParams(window.location.search).get('c');
+  const [tab, setTab] = useState(invited ? 'join' : 'start'); // start | join
   const [name, setName] = useState('');
   const [mode, setMode] = useState('chill');
-  const [joinCode, setJoinCode] = useState('');
+  const [joinCode, setJoinCode] = useState((invited || '').toUpperCase().slice(0, 4));
 
   const create = () => {
     if (!name.trim()) return setError('Enter your name first.');
@@ -115,7 +116,7 @@ function Home({ setError, error }) {
           <div className="modes">
             {MODES.map((m) => (
               <button key={m.id} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
-                <strong>{m.name}</strong><span>{m.blurb}</span>
+                <strong>{m.emoji} {m.name}</strong><span>{m.blurb}</span>
               </button>
             ))}
           </div>
@@ -136,18 +137,28 @@ function Home({ setError, error }) {
 }
 
 function Lobby({ state, me, isHost, leave }) {
+  const [copied, setCopied] = useState(false);
   const you = state.players.find((p) => p.id === me);
   const needMyConsent = state.needsConsent && you && !you.consented;
   const waiting = state.players.filter((p) => p.connected && !p.consented).length;
   const enough = state.players.filter((p) => p.connected).length >= 2;
+
+  const share = async () => {
+    const url = `${window.location.origin}/?c=${state.code}`;
+    const data = { title: 'HOT SEAT', text: `Join my HOT SEAT room — code ${state.code}`, url };
+    try {
+      if (navigator.share) await navigator.share(data);
+      else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
+    } catch { /* user dismissed share sheet */ }
+  };
 
   return (
     <div className="screen">
       <TopBar leave={leave} />
       <div className="center">
         <p className="muted">Room code</p>
-        <div className="bigcode">{state.code}</div>
-        <p className="muted">{state.mode.toUpperCase()} mode</p>
+        <button className="bigcode" onClick={share}>{state.code}</button>
+        <p className="muted share-hint">{copied ? '✅ Invite link copied' : `${state.mode.toUpperCase()} mode · tap to share`}</p>
       </div>
 
       <div className="players">

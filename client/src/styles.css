@@ -11,7 +11,10 @@
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
 body {
-  background: var(--black);
+  background:
+    radial-gradient(1100px 460px at 50% -8%, rgba(232, 53, 43, 0.20), transparent 62%),
+    var(--black);
+  background-attachment: fixed;
   color: var(--cream);
   font-family: Inter, system-ui, sans-serif;
   font-weight: 600;
@@ -28,7 +31,13 @@ body {
   flex-direction: column;
   gap: 16px;
   min-height: 100dvh;
+  animation: rise 0.34s ease both;
 }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* Tactile press feedback across every tappable control. */
+.btn, .pick, .mode, .tab, .pack-btn, .bigcode, .leave { transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease; }
+.btn:active, .pick:active, .mode:active, .tab:active, .pack-btn:active, .bigcode:active, .leave:active { transform: scale(0.97); }
 .center { text-align: center; align-items: center; display: flex; flex-direction: column; gap: 6px; }
 .muted { color: var(--muted); }
 
@@ -67,15 +76,15 @@ body {
 }
 .mode strong { font-size: 18px; }
 .mode span { color: var(--muted); font-size: 13px; font-weight: 600; }
-.mode.on { border-color: var(--red); background: #1e1513; }
+.mode.on { border-color: var(--red); background: #1e1513; box-shadow: 0 8px 22px rgba(232, 53, 43, 0.16); }
 
 /* --- Buttons --- */
 .btn {
   width: 100%; padding: 17px; border-radius: 14px; border: none; font: inherit;
   font-weight: 800; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px;
 }
-.btn.primary { background: var(--red); color: var(--cream); }
-.btn.primary:disabled { background: #3a2320; color: #8a6a66; }
+.btn.primary { background: var(--red); color: var(--cream); box-shadow: 0 10px 26px rgba(232, 53, 43, 0.34); }
+.btn.primary:disabled { background: #3a2320; color: #8a6a66; box-shadow: none; }
 .btn.ghost { background: transparent; color: var(--cream); border: 2px solid var(--line); }
 .row { display: flex; gap: 10px; }
 .row .btn { flex: 1; }
@@ -88,8 +97,11 @@ body {
 .leave { background: none; border: none; color: var(--muted); font: inherit; font-weight: 700; }
 .bigcode {
   font-family: Anton, sans-serif; font-size: 72px; letter-spacing: 8px; color: var(--red);
-  transform: skewX(-6deg);
+  transform: skewX(-6deg); background: none; border: none; cursor: pointer; padding: 0 6px;
+  text-shadow: 0 6px 24px rgba(232, 53, 43, 0.35);
 }
+.bigcode:active { transform: skewX(-6deg) scale(0.96); }
+.share-hint { font-size: 13px; }
 .players { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
 .chip { background: var(--card); border: 2px solid var(--line); padding: 10px 14px; border-radius: 999px; font-weight: 800; }
 .chip.off { opacity: 0.4; }
@@ -132,8 +144,12 @@ body {
 .locked { font-family: Anton, sans-serif; font-size: 32px; color: var(--cream); margin-top: 8px; }
 
 /* --- Reveal --- */
-.hotseat-card { background: var(--card); border: 2px solid var(--red); border-radius: 16px; padding: 18px; text-align: center; }
-.hotseat-name { font-family: Anton, sans-serif; font-size: 40px; color: var(--red); transform: skewX(-5deg); }
+.hotseat-card {
+  background: var(--card); border: 2px solid var(--red); border-radius: 16px; padding: 18px; text-align: center;
+  box-shadow: 0 0 40px rgba(232, 53, 43, 0.22);
+}
+.hotseat-name { font-family: Anton, sans-serif; font-size: 40px; color: var(--red); transform: skewX(-5deg); animation: pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+@keyframes pop { from { opacity: 0; transform: skewX(-5deg) scale(0.5); } to { opacity: 1; transform: skewX(-5deg) scale(1); } }
 .bars { display: flex; flex-direction: column; gap: 8px; }
 .bar-row { display: flex; align-items: center; gap: 10px; }
 .bar-name { width: 80px; font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
