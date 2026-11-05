@@ -70,6 +70,68 @@ function room4(mode = 'chill') {
   assert.deepEqual(rc.awards.find((x) => x.title === 'The Tank').winners, ['Ana']);
 }
 
+// Traitor pulls it off by voting against the crowd.
+{
+  const { r, a, b, c, d } = room4();
+  game.dealPrompt(r); r.wildcard = null; r.traitorId = c.id;
+  game.submit(r, a.id, b.id, b.id);
+  game.submit(r, b.id, c.id, b.id);
+  game.submit(r, c.id, d.id, b.id); // traitor votes Dee, not the hot seat Ben
+  game.submit(r, d.id, b.id, b.id);
+  const rev = game.reveal(r);
+  assert.equal(rev.targetName, 'Ben');
+  assert.equal(rev.traitor.name, 'Cy');
+  assert.ok(rev.traitor.won, 'traitor voted against the crowd');
+  assert.equal(rev.results.find((x) => x.name === 'Cy').sips, 0, 'winning traitor is safe');
+  assert.equal(c.traitorWins, 1);
+  assert.ok(c.tokens >= 1, 'a traitor win grants a token');
+}
+
+// Traitor who votes with the crowd fails and drinks.
+{
+  const { r, a, b, c, d } = room4();
+  game.dealPrompt(r); r.wildcard = null; r.traitorId = c.id;
+  game.submit(r, a.id, b.id, b.id);
+  game.submit(r, b.id, c.id, b.id);
+  game.submit(r, c.id, b.id, b.id); // traitor votes the hot seat -> fail
+  game.submit(r, d.id, b.id, b.id);
+  const rev = game.reveal(r);
+  assert.ok(!rev.traitor.won);
+  assert.equal(rev.results.find((x) => x.name === 'Cy').sips, 1, 'failed traitor drinks');
+}
+
+// Revenge token: most-picked earns one and can spend it exactly once.
+{
+  const { r, a, b, c, d } = room4();
+  game.dealPrompt(r); r.wildcard = null; r.traitorId = null;
+  game.submit(r, a.id, b.id, b.id);
+  game.submit(r, c.id, b.id, b.id);
+  game.submit(r, d.id, b.id, b.id); // Ben is clearly most-picked
+  const rev = game.reveal(r);
+  assert.equal(rev.revengeTo, 'Ben');
+  assert.ok(b.tokens >= 1, 'most-picked earns a token');
+  const payload = game.spendToken(r, b.id, a.id);
+  assert.ok(payload && payload.toName === 'Ana' && payload.challenge, 'spend hands a challenge');
+  assert.equal(b.tokens, 0, 'token consumed');
+  assert.equal(game.spendToken(r, b.id, a.id), null, 'no tokens left to spend');
+}
+
+// Exposed Card lists who voted for whom when it fires.
+{
+  const { r, a, b, c, d } = room4();
+  r.round = 5; r.exposedUsed = false;
+  game.dealPrompt(r); r.traitorId = null;
+  game.submit(r, a.id, b.id, b.id);
+  game.submit(r, b.id, c.id, c.id);
+  game.submit(r, c.id, b.id, b.id);
+  game.submit(r, d.id, b.id, b.id);
+  const orig = Math.random; Math.random = () => 0; // force the exposed roll
+  const rev = game.reveal(r);
+  Math.random = orig;
+  assert.ok(Array.isArray(rev.exposed) && rev.exposed.length === 4, 'exposed lists every voter');
+  assert.ok(rev.exposed.every((e) => e.voter && e.target), 'exposed maps voter -> target by name');
+}
+
 // Snapshot never leaks who voted for whom.
 {
   const { r, a, b, c, d } = room4();

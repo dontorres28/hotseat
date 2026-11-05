@@ -23,12 +23,21 @@ function broadcast(room) {
   io.to(room.code).emit('state', game.snapshot(room));
 }
 
+// Tell each player, privately, whether they're the Traitor this round.
+function sendSecrets(room) {
+  const tId = game.traitorId(room);
+  for (const p of room.players.values()) {
+    if (p.connected && p.socketId) io.to(p.socketId).emit('secret', { role: p.id === tId ? 'traitor' : 'crew' });
+  }
+}
+
 io.on('connection', (socket) => {
   // Track what this socket is bound to, so disconnect can clean up.
   let bound = null; // { code, playerId }
 
   const join = (room, player) => {
     bound = { code: room.code, playerId: player.id };
+    player.socketId = socket.id;
     socket.join(room.code);
     socket.emit('joined', { code: room.code, playerId: player.id, you: player.id });
     broadcast(room);
@@ -60,6 +69,8 @@ io.on('connection', (socket) => {
     if (room.emptyTimer) { clearTimeout(room.emptyTimer); room.emptyTimer = null; }
     ack?.({ ok: true });
     join(room, player);
+    // Restore the Traitor secret if a round is live.
+    if (room.phase === 'prompt') io.to(socket.id).emit('secret', { role: player.id === game.traitorId(room) ? 'traitor' : 'crew' });
   });
 
   const hostAction = (fn) => () => {
@@ -80,6 +91,7 @@ io.on('connection', (socket) => {
   socket.on('start', hostAction((room) => {
     if (!game.allConsented(room)) return;
     game.dealPrompt(room);
+    sendSecrets(room);
   }));
 
   socket.on('submit', ({ voteFor, predict }) => {
@@ -92,8 +104,16 @@ io.on('connection', (socket) => {
   });
 
   socket.on('revealNow', hostAction((room) => { if (room.phase === 'prompt') game.reveal(room); }));
-  socket.on('next', hostAction((room) => game.dealPrompt(room)));
+  socket.on('next', hostAction((room) => { game.dealPrompt(room); sendSecrets(room); }));
   socket.on('end', hostAction((room) => io.to(room.code).emit('recap', game.recap(room))));
+
+  socket.on('spendToken', ({ targetId }) => {
+    if (!bound) return;
+    const room = game.getRoom(bound.code);
+    if (!room) return;
+    const res = game.spendToken(room, bound.playerId, targetId);
+    if (res) { io.to(room.code).emit('revenge', res); broadcast(room); }
+  });
 
   socket.on('disconnect', () => {
     if (!bound) return;

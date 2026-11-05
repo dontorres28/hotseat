@@ -16,14 +16,22 @@ export default function App() {
   const [state, setState] = useState(null);
   const [recap, setRecap] = useState(null);
   const [error, setError] = useState('');
+  const [secret, setSecret] = useState(null); // 'traitor' | 'crew' | null
+  const [toast, setToast] = useState(null);
 
   useEffect(() => {
     socket.on('joined', ({ code, playerId }) => {
       setMe(playerId); setCode(code); setRecap(null);
       localStorage.setItem(LS, JSON.stringify({ code, playerId }));
     });
-    socket.on('state', (s) => { setState(s); if (s.phase !== 'recap') setRecap(null); });
+    socket.on('state', (s) => {
+      setState(s);
+      if (s.phase !== 'recap') setRecap(null);
+      if (s.phase !== 'prompt') setSecret(null); // secret role only lives during a round
+    });
     socket.on('recap', (r) => setRecap(r));
+    socket.on('secret', ({ role }) => setSecret(role));
+    socket.on('revenge', (r) => { setToast(r); setTimeout(() => setToast(null), 4500); });
     // Try to resume a refreshed session.
     const resume = () => {
       try {
@@ -39,13 +47,25 @@ export default function App() {
   const leave = () => { localStorage.removeItem(LS); setMe(null); setCode(null); setState(null); setRecap(null); };
 
   if (!state || !me) return <Home setError={setError} error={error} />;
-  if (recap) return <Recap recap={recap} leave={leave} isHost={state.hostId === me} />;
 
   const isHost = state.hostId === me;
-  if (state.phase === 'lobby') return <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
-  if (state.phase === 'prompt') return <Round state={state} me={me} isHost={isHost} />;
-  if (state.phase === 'reveal') return <Reveal state={state} me={me} isHost={isHost} />;
-  return <Wordmark sub="loading…" />;
+  let screen;
+  if (recap) screen = <Recap recap={recap} leave={leave} isHost={isHost} />;
+  else if (state.phase === 'lobby') screen = <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
+  else if (state.phase === 'prompt') screen = <Round state={state} me={me} isHost={isHost} secret={secret} />;
+  else if (state.phase === 'reveal') screen = <Reveal state={state} me={me} isHost={isHost} />;
+  else screen = <Wordmark sub="loading…" />;
+
+  return <>{screen}{toast && <Toast t={toast} />}</>;
+}
+
+function Toast({ t }) {
+  return (
+    <div className="toast">
+      <strong>🎟️ {t.fromName} spent a revenge token on {t.toName}</strong>
+      <span>{t.challenge}</span>
+    </div>
+  );
 }
 
 function Wordmark({ sub }) {
@@ -154,7 +174,7 @@ function Lobby({ state, me, isHost, leave }) {
   );
 }
 
-function Round({ state, me, isHost }) {
+function Round({ state, me, isHost, secret }) {
   const [vote, setVote] = useState(null);
   const [predict, setPredict] = useState(null);
   const submitted = state.submittedIds.includes(me);
@@ -184,6 +204,9 @@ function Round({ state, me, isHost }) {
         {state.wildcard && <span className="wild">WILDCARD</span>}
       </div>
       {state.wildcard && <div className="wild-banner">⚡ {state.wildcard.label}</div>}
+      {secret === 'traitor' && (
+        <div className="traitor-banner">😈 You're the TRAITOR. Vote <em>against</em> the crowd — don't pick who you think lands in the hot seat. Pull it off for a reward.</div>
+      )}
       <h2 className="prompt">{state.prompt}</h2>
 
       <p className="label">Who fits? <span className="muted">(not you)</span></p>
@@ -211,9 +234,14 @@ function PickGrid({ players, value, onPick, accent }) {
 
 function Reveal({ state, me, isHost }) {
   const r = state.reveal;
+  const [picking, setPicking] = useState(false);
   const mine = r.results.find((x) => x.id === me);
   const youAreHotSeat = r.targetId === me;
   const maxVotes = Math.max(1, ...r.breakdown.map((b) => b.votes));
+  const meP = state.players.find((p) => p.id === me);
+  const myTokens = meP?.tokens || 0;
+
+  const spend = (targetId) => { socket.emit('spendToken', { targetId }); setPicking(false); };
 
   return (
     <div className="screen">
@@ -244,6 +272,36 @@ function Reveal({ state, me, isHost }) {
           <><strong>Safe.</strong><p>You read the room right.</p></>
         )}
       </div>
+
+      {r.traitor && (
+        <div className={'traitor-reveal ' + (r.traitor.won ? 'won' : 'caught')}>
+          😈 <strong>{r.traitor.name}</strong> was the Traitor — {r.traitor.won ? 'and got away with it.' : 'and voted with the crowd. Busted.'}
+        </div>
+      )}
+
+      {r.exposed && (
+        <div className="exposed">
+          <div className="exposed-head">🃏 THE EXPOSED CARD</div>
+          <p className="muted">Who voted for whom this round:</p>
+          {r.exposed.map((e, i) => (
+            <div key={i} className="exposed-row"><span>{e.voter}</span><span className="arrow">→</span><strong>{e.target}</strong></div>
+          ))}
+        </div>
+      )}
+
+      {r.revengeTo === meP?.name && <p className="earned">🎟️ You took the most heat — you earned a revenge token.</p>}
+
+      {myTokens > 0 && (
+        picking ? (
+          <div className="spend">
+            <p className="label">Hand a challenge to…</p>
+            <PickGrid players={state.players.filter((p) => p.id !== me)} value={null} onPick={spend} accent="red" />
+            <button className="btn ghost" onClick={() => setPicking(false)}>Cancel</button>
+          </div>
+        ) : (
+          <button className="btn ghost" onClick={() => setPicking(true)}>🎟️ Spend revenge token ({myTokens})</button>
+        )
+      )}
 
       {isHost ? (
         <div className="row">

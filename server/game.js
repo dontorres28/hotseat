@@ -54,9 +54,12 @@ export function addPlayer(room, name, { host = false } = {}) {
     name: name.trim().slice(0, 20) || 'Player',
     connected: true,
     consented: !CONSENT_MODES.includes(room.mode),
+    socketId: null,
     timesInHotSeat: 0,
     correctPredictions: 0,
     sips: 0,
+    tokens: 0,       // revenge tokens
+    traitorWins: 0,  // rounds pulled off as the Traitor
   };
   room.players.set(id, player);
   if (host || !room.hostId) room.hostId = id;
@@ -97,8 +100,16 @@ export function dealPrompt(room) {
   // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
   const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
   room.wildcard = roll ? WILDCARDS[Math.floor(Math.random() * WILDCARDS.length)] : null;
+  // The Traitor: one random player is secretly told to vote against the crowd.
+  // Needs a real crowd to hide in.
+  const active = activePlayers(room);
+  room.traitorId = active.length >= 3 ? active[Math.floor(Math.random() * active.length)].id : null;
   room.phase = 'prompt';
   room.lastReveal = null;
+}
+
+export function traitorId(room) {
+  return room.traitorId || null;
 }
 
 export function submit(room, playerId, voteFor, predict) {
@@ -147,6 +158,17 @@ export function reveal(room) {
   const target = room.players.get(targetId);
   if (target) target.timesInHotSeat += 1;
 
+  // Most-picked player (for the revenge token) — the hot seat normally, but a
+  // distinct person under the MINORITY rule.
+  const maxVotes = Math.max(...entries.map(([, n]) => n));
+  const topTied = entries.filter(([, n]) => n === maxVotes).map(([id]) => id);
+  const mostPickedId = topTied[Math.floor(Math.random() * topTied.length)];
+
+  // The Traitor pulled it off if they voted AGAINST the crowd (not the hot seat).
+  const tId = room.traitorId;
+  const tSub = tId ? room.submissions.get(tId) : null;
+  const traitorWon = !!(tId && tSub && tSub.voteFor !== targetId);
+
   const doubled = wc === 'double';
   const reversed = wc === 'reverse';
 
@@ -154,24 +176,44 @@ export function reveal(room) {
     const sub = room.submissions.get(p.id);
     const readRight = sub && sub.predict === targetId; // did they read the room?
     if (readRight) p.correctPredictions += 1;
-    // Who drinks: wrong readers normally; under REVERSE the right readers drink.
-    const drinks = reversed ? !!readRight : !readRight;
+    let drinks;
+    if (p.id === tId) {
+      drinks = !traitorWon; // the Traitor is judged on the mission, not the read
+    } else {
+      // Who drinks: wrong readers normally; under REVERSE the right readers drink.
+      drinks = reversed ? !!readRight : !readRight;
+    }
     let sips = 0;
-    if (drinks) { sips = doubled ? 2 : 1; p.sips += sips; }
+    if (drinks) { sips = doubled && p.id !== tId ? 2 : 1; p.sips += sips; }
     return { id: p.id, name: p.name, predict: sub?.predict ?? null, readRight: !!readRight, sips };
   });
+
+  // Revenge token: the most-picked player earns one to spend later.
+  const mostPicked = room.players.get(mostPickedId);
+  if (mostPicked) mostPicked.tokens += 1;
+  // Traitor reward: a win is a token too.
+  if (traitorWon) { const t = room.players.get(tId); if (t) { t.tokens += 1; t.traitorWins += 1; } }
 
   // The hot seat always takes the heat, with a challenge.
   const challenge = drawChallenge(room);
   if (target) target.sips += 1;
+
+  // The Exposed Card: once a game (from round 3+), reveal who voted for whom.
+  let exposed = null;
+  if (!room.exposedUsed && room.round >= 3 && Math.random() < 0.3) {
+    room.exposedUsed = true;
+    exposed = [...room.submissions.entries()].map(([voter, s]) => ({
+      voter: room.players.get(voter)?.name,
+      target: room.players.get(s.voteFor)?.name,
+    }));
+  }
 
   room.phase = 'reveal';
   room.lastReveal = {
     prompt: room.prompt,
     wildcard: room.wildcard,
     round: room.round,
-    // Only vote *counts* are shown — who voted for whom stays secret (that's the
-    // deferred "Exposed Card" reveal).
+    // Vote *counts* only — individual votes stay secret unless it's an Exposed round.
     breakdown: entries
       .map(([id, n]) => ({ name: room.players.get(id)?.name, votes: n }))
       .sort((a, b) => b.votes - a.votes),
@@ -179,8 +221,21 @@ export function reveal(room) {
     targetName: target?.name,
     challenge,
     results,
+    revengeTo: mostPicked?.name,
+    traitor: tId ? { name: room.players.get(tId)?.name, won: traitorWon } : null,
+    exposed,
   };
   return room.lastReveal;
+}
+
+// Spend a revenge token to hand someone a challenge. Returns the payload to
+// broadcast, or null if the move isn't allowed.
+export function spendToken(room, playerId, targetId) {
+  const from = room.players.get(playerId);
+  const to = room.players.get(targetId);
+  if (!from || !to || from.tokens <= 0 || targetId === playerId) return null;
+  from.tokens -= 1;
+  return { fromName: from.name, toName: to.name, challenge: drawChallenge(room) };
 }
 
 export function recap(room) {
@@ -195,6 +250,7 @@ export function recap(room) {
     awards: [
       { title: 'Most Roasted', emoji: '🔥', winners: award('timesInHotSeat'), stat: 'times in the hot seat' },
       { title: 'Best Mind Reader', emoji: '🔮', winners: award('correctPredictions'), stat: 'rooms read right' },
+      { title: 'Biggest Traitor', emoji: '😈', winners: award('traitorWins'), stat: 'traitor missions pulled off' },
       { title: 'The Tank', emoji: '🍺', winners: award('sips'), stat: 'sips taken' },
     ],
     scoreboard: players
@@ -213,7 +269,7 @@ export function snapshot(room) {
     hostId: room.hostId,
     needsConsent: CONSENT_MODES.includes(room.mode),
     players: [...room.players.values()].map((p) => ({
-      id: p.id, name: p.name, connected: p.connected, consented: p.consented,
+      id: p.id, name: p.name, connected: p.connected, consented: p.consented, tokens: p.tokens,
     })),
     prompt: room.phase === 'prompt' ? room.prompt : null,
     wildcard: room.phase === 'prompt' ? room.wildcard : null,

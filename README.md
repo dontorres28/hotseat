@@ -71,12 +71,21 @@ penalties), all four modes with Spicy/Chaos consent gating, wildcard rounds
 (minority / double / reverse), reconnect-on-refresh, and an end-of-night recap
 with awards.
 
-**Deferred** (hooks are in place, not wired to UI yet):
-- **The Exposed Card** — reveal exactly who voted for whom, once a night. Votes
-  are already kept server-side and never leaked, so this is a UI + one event.
-- **Revenge tokens** — hand the most-picked player a challenge to assign.
-- **The Traitor** — secretly tell one player to vote against the crowd.
-- Per-round timers and QR-code room joins.
+All three **signature features** are wired in:
+- **The Traitor** — each round (3+ players) one player is secretly told to vote
+  against the crowd; pulling it off means no drink + a revenge token, and the
+  reveal names them either way.
+- **Revenge tokens** — the most-picked player earns a token to hand anyone a
+  challenge, broadcast to the room as a toast.
+- **The Exposed Card** — once a game (round 3+), the reveal shows exactly who
+  voted for whom. Votes are kept server-side and never leaked otherwise.
+
+**Deferred:** per-round timers and QR-code room joins.
+
+> `ponytail:` the Traitor's "nobody catches them" is simplified — success =
+> voting off the hot seat, no separate catch-the-traitor vote. The Exposed Card
+> fires on a random roll (≤1/game). Add a catch vote / host-triggered expose if
+> playtesting wants them.
 
 ## Not drinking?
 
