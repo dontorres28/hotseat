@@ -36,11 +36,11 @@ function room4(mode = 'chill') {
   const { r, a, b, c, d } = room4();
   game.dealPrompt(r);
   r.wildcard = { id: 'minority', label: 'x' };
-  // 3 votes on Ben, nobody on Dee -> Dee (least) is the hot seat.
-  game.submit(r, a.id, b.id, d.id);
-  game.submit(r, c.id, b.id, b.id);
-  game.submit(r, d.id, b.id, d.id);
-  game.submit(r, b.id, c.id, a.id);
+  // Ana 2, Ben 1, Cy 1, Dee 0 -> Dee is uniquely least-picked -> hot seat.
+  game.submit(r, a.id, b.id, d.id); // votes Ben, predicts Dee
+  game.submit(r, b.id, c.id, b.id); // votes Cy
+  game.submit(r, c.id, a.id, b.id); // votes Ana
+  game.submit(r, d.id, a.id, d.id); // votes Ana
   const rev = game.reveal(r);
   assert.equal(rev.targetName, 'Dee', 'minority target is least-picked');
   assert.ok(rev.results.find((x) => x.name === 'Ana').readRight, 'Ana predicted Dee');
@@ -140,6 +140,23 @@ function room4(mode = 'chill') {
   const snap = game.snapshot(r);
   assert.ok(!JSON.stringify(snap).includes('voteFor'), 'no raw votes in snapshot');
   assert.deepEqual(snap.submittedIds, [a.id], 'only submitted ids, not their choices');
+}
+
+// Prompt packs: locked until unlocked; unlocked+enabled packs feed the deck.
+{
+  const r = game.createRoom('chill');
+  assert.equal(game.unlockPack(r, 'nope'), false, 'unknown pack is rejected');
+  assert.equal(game.togglePack(r, 'college'), false, 'cannot toggle a locked pack');
+  game.buildDeck(r);
+  const base = r.deck.length;
+  assert.ok(game.unlockPack(r, 'college'), 'known pack unlocks');
+  game.buildDeck(r);
+  assert.ok(r.deck.length > base, 'unlocked+enabled pack adds prompts');
+  assert.ok(game.togglePack(r, 'college'), 'unlocked pack toggles off');
+  game.buildDeck(r);
+  assert.equal(r.deck.length, base, 'disabled pack drops back out of the deck');
+  const cat = game.packCatalog(r).find((p) => p.id === 'college');
+  assert.ok(cat.unlocked && !cat.enabled, 'catalog reflects unlocked-but-off');
 }
 
 console.log('ok — all game checks passed');

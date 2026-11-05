@@ -90,9 +90,20 @@ io.on('connection', (socket) => {
 
   socket.on('start', hostAction((room) => {
     if (!game.allConsented(room)) return;
+    game.buildDeck(room); // fold in any unlocked + enabled packs
     game.dealPrompt(room);
     sendSecrets(room);
   }));
+
+  // Host picks packs in the lobby. unlockPack is a stubbed purchase — see game.js.
+  const packAction = (name, fn) => socket.on(name, ({ packId }) => {
+    if (!bound) return;
+    const room = game.getRoom(bound.code);
+    if (!room || room.hostId !== bound.playerId || room.phase !== 'lobby') return;
+    if (fn(room, packId)) broadcast(room);
+  });
+  packAction('unlockPack', game.unlockPack);
+  packAction('togglePack', game.togglePack);
 
   socket.on('submit', ({ voteFor, predict }) => {
     if (!bound) return;

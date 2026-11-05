@@ -158,6 +158,8 @@ function Lobby({ state, me, isHost, leave }) {
         ))}
       </div>
 
+      <Packs packs={state.packs || []} isHost={isHost} />
+
       {needMyConsent && (
         <button className="btn primary" onClick={() => socket.emit('consent')}>This gets spicy — I'm in 🌶️</button>
       )}
@@ -170,6 +172,41 @@ function Lobby({ state, me, isHost, leave }) {
       ) : (
         <p className="muted center">Waiting for the host to start…</p>
       )}
+    </div>
+  );
+}
+
+function Packs({ packs, isHost }) {
+  const enabled = packs.filter((p) => p.enabled);
+  if (!isHost) {
+    return enabled.length ? (
+      <div className="packs-ro">
+        <span className="muted">Packs:</span>
+        {enabled.map((p) => <span key={p.id} className="chip">{p.emoji} {p.name}</span>)}
+      </div>
+    ) : null;
+  }
+  return (
+    <div className="packs">
+      <p className="label">Prompt packs <span className="muted">— spice up the deck</span></p>
+      {packs.map((p) => (
+        <div key={p.id} className={'pack-row' + (p.enabled ? ' on' : '')}>
+          <div className="pack-meta">
+            <strong>{p.emoji} {p.name}</strong>
+            <span className="muted">{p.blurb}</span>
+          </div>
+          {p.unlocked ? (
+            <button className={'pack-btn' + (p.enabled ? ' on' : '')} onClick={() => socket.emit('togglePack', { packId: p.id })}>
+              {p.enabled ? 'On' : 'Off'}
+            </button>
+          ) : (
+            <button className="pack-btn buy" onClick={() => socket.emit('unlockPack', { packId: p.id })}>
+              Unlock ${p.price}
+            </button>
+          )}
+        </div>
+      ))}
+      <p className="fine">Demo unlock — no real charge yet. Payments slot in here.</p>
     </div>
   );
 }

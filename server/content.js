@@ -57,6 +57,58 @@ const PROMPTS = {
   ],
 };
 
+// Premium prompt packs — the monetization unit. A room's deck is its mode's
+// prompts plus any packs the host has unlocked and enabled. Prompts here are a
+// starter set; expand per pack before launch.
+export const PACKS = [
+  {
+    id: 'college', name: 'College', emoji: '🎓', price: 3,
+    blurb: 'Dorms, exes, questionable decisions.',
+    prompts: [
+      "Who's most likely to still be going out at 35?",
+      "Who failed a class they never told anyone about?",
+      "Who's most likely to have hooked up in the library?",
+      "Who peaked at a house party?",
+      "Who would survive finals week on zero sleep?",
+      "Who's most likely to have texted a professor something unhinged?",
+      "Who had the most chaotic roommate story?",
+      "Who's most likely to still owe someone money from college?",
+    ],
+  },
+  {
+    id: 'couples', name: 'Couples', emoji: '💘', price: 3,
+    blurb: 'For double dates and group dinners.',
+    prompts: [
+      "Which couple here fights the most in private?",
+      "Who wears the pants in their relationship?",
+      "Who's most likely to propose first?",
+      "Which couple started as a situationship?",
+      "Who's the bigger romantic of their pair?",
+      "Who's most likely to forget an anniversary?",
+      "Which couple overshares the most?",
+      "Who would survive longest single if they broke up?",
+    ],
+  },
+  {
+    id: 'bachelorette', name: 'Bachelorette', emoji: '👰', price: 4,
+    blurb: 'Last night of freedom energy.',
+    prompts: [
+      "Who's going to cry first tonight?",
+      "Who's most likely to lose their phone before midnight?",
+      "Who's the designated chaos agent of the group?",
+      "Who's most likely to flirt with the bartender?",
+      "Who gave the bride the worst advice?",
+      "Who's most likely to start the afterparty?",
+      "Who will remember the least tomorrow?",
+      "Who's secretly planning to catch the bouquet?",
+    ],
+  },
+];
+
+export function packById(id) {
+  return PACKS.find((p) => p.id === id) || null;
+}
+
 // Wildcard rules that can flip a round. Each has an id, label, and how it scores.
 export const WILDCARDS = [
   { id: 'minority', label: 'MINORITY WINS: the least-picked person is in the hot seat.' },
