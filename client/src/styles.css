@@ -246,6 +246,12 @@ body {
 .verdict p { margin-top: 4px; }
 .verdict.safe { background: #13201a; border: 2px solid #2e5a44; }
 .verdict.drink { background: #231311; border: 2px solid var(--red); }
+.swap-btn {
+  margin-top: 10px; background: transparent; border: none; color: var(--muted);
+  font: inherit; font-weight: 700; font-size: 13px; text-decoration: underline; text-underline-offset: 3px;
+}
+.swap-btn:active { opacity: 0.6; }
+.dare { margin-top: 10px; color: var(--cream); font-weight: 700; }
 
 /* --- Signature features --- */
 .traitor-banner {

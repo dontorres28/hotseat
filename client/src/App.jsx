@@ -64,6 +64,17 @@ export default function App() {
   return <>{screen}{toast && <Toast t={toast} />}</>;
 }
 
+// Shown when you're told to drink — swap the sip for a non-drinking dare.
+function DareSwap() {
+  const [dare, setDare] = useState(null);
+  if (dare) return <p className="dare">🎯 Dare instead: {dare}</p>;
+  return (
+    <button className="swap-btn" onClick={() => socket.emit('swapDare', {}, (d) => setDare(d))}>
+      Not drinking? Swap for a dare
+    </button>
+  );
+}
+
 function Toast({ t }) {
   return (
     <div className="toast">
@@ -311,6 +322,7 @@ function DuelReveal({ state, me, isHost }) {
 
       <div className={'verdict ' + (youDrink ? 'drink' : 'safe')}>
         {youDrink ? (<><strong>You got picked.</strong><p>{r.challenge}</p></>) : (<><strong>Safe.</strong><p>Not you this time.</p></>)}
+        {youDrink && <DareSwap />}
       </div>
 
       {isHost ? (
@@ -422,6 +434,7 @@ function Reveal({ state, me, isHost }) {
         ) : (
           <><strong>Safe.</strong><p>You read the room right.</p></>
         )}
+        {(youAreHotSeat || mine?.sips) && <DareSwap />}
       </div>
 
       {r.traitor && (

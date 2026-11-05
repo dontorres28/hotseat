@@ -134,6 +134,9 @@ io.on('connection', (socket) => {
     if (res) { io.to(room.code).emit('revenge', res); broadcast(room); }
   });
 
+  // Personal "not drinking? swap for a dare" — returns a non-drinking dare.
+  socket.on('swapDare', (_data, ack) => ack?.(game.randomDare()));
+
   socket.on('disconnect', () => {
     if (!bound) return;
     const room = game.getRoom(bound.code);

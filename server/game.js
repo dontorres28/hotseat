@@ -3,7 +3,11 @@
 // ponytail: in-memory single-process store; move rooms to Redis only if you run
 // more than one server instance.
 
-import { promptsForMode, shuffled, CHALLENGES, WILDCARDS, CONSENT_MODES, PACKS, packById } from './content.js';
+import { promptsForMode, shuffled, CHALLENGES, DARES, WILDCARDS, CONSENT_MODES, PACKS, packById } from './content.js';
+
+export function randomDare() {
+  return DARES[Math.floor(Math.random() * DARES.length)];
+}
 
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no easily-confused chars
 const rooms = new Map(); // code -> room

@@ -237,6 +237,36 @@ export const CHALLENGES = [
   "Do an impression of the host until the next reveal.",
 ];
 
+// Pure non-drinking dares, for the "swap a sip for a dare" option. No drinking here.
+export const DARES = [
+  "Do your best impression of someone else in the room.",
+  "Talk in an accent until the next reveal.",
+  "Serenade the person across from you for 15 seconds.",
+  "Show the group your last Google search. No scrolling away.",
+  "Show the room your screen-time number.",
+  "Read your most recent text out loud, including who it's to.",
+  "Show the group the last photo in your camera roll.",
+  "Talk about yourself in the third person until the next reveal.",
+  "Whisper everything you say until the next reveal.",
+  "Speak only in questions until the next reveal.",
+  "The group gives you a nickname for the night. Only answer to it.",
+  "Keep one hand on your head until the next reveal.",
+  "Do 10 squats.",
+  "Do 10 pushups.",
+  "Dramatically re-enact how you think you'll die.",
+  "Narrate the room like a nature documentary until the next reveal.",
+  "Do your best catwalk to the nearest door and back.",
+  "Do your best evil villain laugh.",
+  "Compliment everyone in the room in one breath.",
+  "Do a 20-second infomercial for the nearest object.",
+  "Do your best model pose and hold it until the next reveal.",
+  "Sing your next sentence like it's a musical.",
+  "Imitate the last person who spoke.",
+  "Do an impression of the host until the next reveal.",
+  "Give a dramatic acceptance speech for Hot Seat of the Night.",
+  "Swap seats with the person on your left.",
+];
+
 export function promptsForMode(mode) {
   if (mode === 'chaos') {
     // Everything mixed.
