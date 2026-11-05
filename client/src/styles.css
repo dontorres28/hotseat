@@ -32,19 +32,9 @@ body {
 .center { text-align: center; align-items: center; display: flex; flex-direction: column; gap: 6px; }
 .muted { color: var(--muted); }
 
-/* --- Wordmark: bold italic, echoing the logo --- */
-.logo {
-  font-family: Anton, Impact, sans-serif;
-  line-height: 0.82;
-  transform: skewX(-7deg);
-  letter-spacing: 1px;
-  text-align: center;
-  text-transform: uppercase;
-}
-.logo .logo-top, .logo .logo-bot { display: block; }
-.logo .logo-top { font-size: 60px; color: var(--cream); }
-.logo .logo-bot { font-size: 60px; color: var(--red); -webkit-text-stroke: 0; }
-.logo-sm .logo-top, .logo-sm .logo-bot { font-size: 30px; line-height: 0.85; }
+/* --- Logo --- */
+.logo { width: 210px; max-width: 70vw; height: auto; display: block; }
+.logo-sm { width: 76px; }
 
 .tagline { text-align: center; color: var(--muted); font-weight: 800; font-size: 15px; margin-top: 4px; }
 

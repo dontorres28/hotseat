@@ -58,12 +58,7 @@ function Wordmark({ sub }) {
 }
 
 function Logo({ small }) {
-  return (
-    <h1 className={small ? 'logo logo-sm' : 'logo'}>
-      <span className="logo-top">HOT</span>
-      <span className="logo-bot">SEAT</span>
-    </h1>
-  );
+  return <img className={small ? 'logo logo-sm' : 'logo'} src="/logo.webp" alt="HOT SEAT" />;
 }
 
 function Home({ setError, error }) {

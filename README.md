@@ -76,8 +76,7 @@ with awards.
   are already kept server-side and never leaked, so this is a UI + one event.
 - **Revenge tokens** — hand the most-picked player a challenge to assign.
 - **The Traitor** — secretly tell one player to vote against the crowd.
-- Per-round timers, QR-code room joins, and the real logo asset (drop
-  `logo.png` into `client/public/` and reference it in `index.html`).
+- Per-round timers and QR-code room joins.
 
 ## Not drinking?
 
