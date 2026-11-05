@@ -117,19 +117,36 @@ export const WILDCARDS = [
 ];
 
 // Challenges handed out instead of (or on top of) a sip. No repeats within a game.
+// Mix of drinks, dares and chaos. There's always a non-drinking option.
 export const CHALLENGES = [
   "Take a sip.",
-  "Give a sip to anyone.",
-  "Do your best impression of the person in the hot seat.",
+  "Give two sips to anyone.",
   "Everyone to your left drinks.",
-  "Last to raise a hand drinks.",
-  "Speak only in questions until the next reveal.",
-  "Give a genuine compliment to the hot seat.",
+  "Last to raise a hand takes two.",
   "Waterfall: start drinking, no one stops until you do.",
+  "Do your best impression of the person in the hot seat.",
+  "Give a genuine compliment to the hot seat, then take a sip anyway.",
   "Swap seats with the person in the hot seat.",
-  "Reveal the last photo in your camera roll.",
-  "Finish your drink's rule: the hot seat picks who drinks.",
-  "Do 5 pushups or take two sips.",
+  "Do 10 squats while naming your exes out loud.",
+  "Show the group your last Google search. No scrolling away.",
+  "Reveal your phone's screen-time number to the room.",
+  "Speak only in the third person until the next reveal.",
+  "Whisper everything you say for the next two rounds.",
+  "The group gives you a new name for the night. Only answer to it.",
+  "Hold eye contact with the hot seat for 30 seconds. Laugh and you drink.",
+  "Let the person on your right type one text from your phone to anyone.",
+  "Keep one hand on your head until someone else lands in the hot seat.",
+  "Do your worst accent until your next turn. Drop it and you drink.",
+  "Serenade the person across from you for 15 seconds.",
+  "Dramatically re-enact how you think you'll die.",
+  "Let the hot seat pick an emoji that replaces every time you say 'the'.",
+  "Read your most recent text out loud, sender included.",
+  "Call the 5th contact in your phone and tell them a weird fun fact.",
+  "Swap one visible item of clothing with the person on your left.",
+  "Propose to the nearest stranger or inanimate object. Mean it.",
+  "Everyone votes one word you're banned from saying all night. Slip up, drink.",
+  "Narrate everyone else's actions like a nature documentary until your next turn.",
+  "Let the group choose a dare emoji; the hot seat decides what it means.",
 ];
 
 export function promptsForMode(mode) {

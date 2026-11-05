@@ -131,7 +131,7 @@ function Home({ setError, error }) {
       )}
 
       {error && <p className="error">{error}</p>}
-      <p className="fine">21+. Know your limit. There's always a non-drinking challenge — never required to drink.</p>
+      <p className="fine">18+. Know your limit. There's always a non-drinking challenge, never required to drink.</p>
     </div>
   );
 }
@@ -141,11 +141,11 @@ function Lobby({ state, me, isHost, leave }) {
   const you = state.players.find((p) => p.id === me);
   const needMyConsent = state.needsConsent && you && !you.consented;
   const waiting = state.players.filter((p) => p.connected && !p.consented).length;
-  const enough = state.players.filter((p) => p.connected).length >= 2;
+  const enough = state.players.filter((p) => p.connected).length >= 4;
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
-    const data = { title: 'HOT SEAT', text: `Join my HOT SEAT room — code ${state.code}`, url };
+    const data = { title: 'HOT SEAT', text: `Join my HOT SEAT room, code ${state.code}`, url };
     try {
       if (navigator.share) await navigator.share(data);
       else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
@@ -158,7 +158,7 @@ function Lobby({ state, me, isHost, leave }) {
       <div className="center">
         <p className="muted">Room code</p>
         <button className="bigcode" onClick={share}>{state.code}</button>
-        <p className="muted share-hint">{copied ? '✅ Invite link copied' : `${state.mode.toUpperCase()} mode · tap to share`}</p>
+        <p className="muted share-hint">{copied ? '✅ Invite link copied' : `${state.mode.toUpperCase()} mode, tap to share`}</p>
       </div>
 
       <div className="players">
@@ -172,13 +172,13 @@ function Lobby({ state, me, isHost, leave }) {
       <Packs packs={state.packs || []} isHost={isHost} />
 
       {needMyConsent && (
-        <button className="btn primary" onClick={() => socket.emit('consent')}>This gets spicy — I'm in 🌶️</button>
+        <button className="btn primary" onClick={() => socket.emit('consent')}>This gets spicy, I'm in 🌶️</button>
       )}
 
       {isHost ? (
         <button className="btn primary" disabled={!enough || waiting > 0}
           onClick={() => socket.emit('start')}>
-          {!enough ? 'Need 2+ players' : waiting > 0 ? `Waiting on ${waiting} to opt in` : 'Start game'}
+          {!enough ? 'Need 4+ players' : waiting > 0 ? `Waiting on ${waiting} to opt in` : 'Start game'}
         </button>
       ) : (
         <p className="muted center">Waiting for the host to start…</p>
@@ -199,7 +199,7 @@ function Packs({ packs, isHost }) {
   }
   return (
     <div className="packs">
-      <p className="label">Prompt packs <span className="muted">— spice up the deck</span></p>
+      <p className="label">Prompt packs <span className="muted">(spice up the deck)</span></p>
       {packs.map((p) => (
         <div key={p.id} className={'pack-row' + (p.enabled ? ' on' : '')}>
           <div className="pack-meta">
@@ -217,7 +217,7 @@ function Packs({ packs, isHost }) {
           )}
         </div>
       ))}
-      <p className="fine">Demo unlock — no real charge yet. Payments slot in here.</p>
+      <p className="fine">Demo unlock, no real charge yet. Payments slot in here.</p>
     </div>
   );
 }
@@ -253,7 +253,7 @@ function Round({ state, me, isHost, secret }) {
       </div>
       {state.wildcard && <div className="wild-banner">⚡ {state.wildcard.label}</div>}
       {secret === 'traitor' && (
-        <div className="traitor-banner">😈 You're the TRAITOR. Vote <em>against</em> the crowd — don't pick who you think lands in the hot seat. Pull it off for a reward.</div>
+        <div className="traitor-banner">😈 You're the TRAITOR. Vote <em>against</em> the crowd. Don't pick who you think lands in the hot seat. Pull it off for a reward.</div>
       )}
       <h2 className="prompt">{state.prompt}</h2>
 
@@ -323,7 +323,7 @@ function Reveal({ state, me, isHost }) {
 
       {r.traitor && (
         <div className={'traitor-reveal ' + (r.traitor.won ? 'won' : 'caught')}>
-          😈 <strong>{r.traitor.name}</strong> was the Traitor — {r.traitor.won ? 'and got away with it.' : 'and voted with the crowd. Busted.'}
+          😈 <strong>{r.traitor.name}</strong> was the Traitor, {r.traitor.won ? 'and got away with it.' : 'and voted with the crowd. Busted.'}
         </div>
       )}
 
@@ -337,7 +337,7 @@ function Reveal({ state, me, isHost }) {
         </div>
       )}
 
-      {r.revengeTo === meP?.name && <p className="earned">🎟️ You took the most heat — you earned a revenge token.</p>}
+      {r.revengeTo === meP?.name && <p className="earned">🎟️ You took the most heat. You earned a revenge token.</p>}
 
       {myTokens > 0 && (
         picking ? (
@@ -375,7 +375,7 @@ function Recap({ recap, leave, isHost }) {
             <span className="award-emoji">{a.emoji}</span>
             <div>
               <strong>{a.title}</strong>
-              <div className="award-win">{a.winners.length ? a.winners.join(', ') : '—'}</div>
+              <div className="award-win">{a.winners.length ? a.winners.join(', ') : 'nobody'}</div>
               <span className="muted">{a.stat}</span>
             </div>
           </div>

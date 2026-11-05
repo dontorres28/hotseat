@@ -15,7 +15,7 @@ function room4(mode = 'chill') {
 {
   const { r, a, b, c, d } = room4();
   game.dealPrompt(r);
-  r.wildcard = null; // force plain round
+  r.wildcard = null; r.traitorId = null; // force a plain round
   // Everyone votes Ben -> Ben is the hot seat.
   game.submit(r, a.id, b.id, b.id); // read right
   game.submit(r, b.id, c.id, b.id); // can't self-vote, predicts Ben (right)
@@ -35,7 +35,7 @@ function room4(mode = 'chill') {
 {
   const { r, a, b, c, d } = room4();
   game.dealPrompt(r);
-  r.wildcard = { id: 'minority', label: 'x' };
+  r.wildcard = { id: 'minority', label: 'x' }; r.traitorId = null;
   // Ana 2, Ben 1, Cy 1, Dee 0 -> Dee is uniquely least-picked -> hot seat.
   game.submit(r, a.id, b.id, d.id); // votes Ben, predicts Dee
   game.submit(r, b.id, c.id, b.id); // votes Cy
@@ -50,7 +50,7 @@ function room4(mode = 'chill') {
 {
   const { r, a, b, c, d } = room4();
   game.dealPrompt(r);
-  r.wildcard = { id: 'reverse', label: 'x' };
+  r.wildcard = { id: 'reverse', label: 'x' }; r.traitorId = null;
   game.submit(r, a.id, b.id, b.id); // right read -> drinks under reverse
   game.submit(r, c.id, b.id, a.id); // wrong read -> safe under reverse
   game.submit(r, d.id, b.id, b.id);
@@ -157,6 +157,15 @@ function room4(mode = 'chill') {
   assert.equal(r.deck.length, base, 'disabled pack drops back out of the deck');
   const cat = game.packCatalog(r).find((p) => p.id === 'college');
   assert.ok(cat.unlocked && !cat.enabled, 'catalog reflects unlocked-but-off');
+}
+
+// Minimum players to start.
+{
+  const r = game.createRoom('chill');
+  game.addPlayer(r, 'A'); game.addPlayer(r, 'B'); game.addPlayer(r, 'C');
+  assert.equal(game.enoughPlayers(r), false, '3 players is not enough');
+  game.addPlayer(r, 'D');
+  assert.equal(game.enoughPlayers(r), true, '4 players can start');
 }
 
 console.log('ok — all game checks passed');

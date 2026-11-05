@@ -124,6 +124,11 @@ export function allConsented(room) {
   return [...room.players.values()].filter((p) => p.connected).every((p) => p.consented);
 }
 
+const MIN_PLAYERS = 4;
+export function enoughPlayers(room) {
+  return [...room.players.values()].filter((p) => p.connected).length >= MIN_PLAYERS;
+}
+
 function activePlayers(room) {
   return [...room.players.values()].filter((p) => p.connected);
 }

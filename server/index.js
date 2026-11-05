@@ -89,7 +89,7 @@ io.on('connection', (socket) => {
   });
 
   socket.on('start', hostAction((room) => {
-    if (!game.allConsented(room)) return;
+    if (!game.allConsented(room) || !game.enoughPlayers(room)) return;
     game.buildDeck(room); // fold in any unlocked + enabled packs
     game.dealPrompt(room);
     sendSecrets(room);
