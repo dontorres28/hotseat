@@ -159,13 +159,25 @@ function room4(mode = 'chill') {
   assert.ok(cat.unlocked && !cat.enabled, 'catalog reflects unlocked-but-off');
 }
 
-// Minimum players to start.
+// Minimum players to start is 2.
+{
+  const r = game.createRoom('chill');
+  game.addPlayer(r, 'A');
+  assert.equal(game.enoughPlayers(r), false, '1 player is not enough');
+  game.addPlayer(r, 'B');
+  assert.equal(game.enoughPlayers(r), true, '2 players can start');
+}
+
+// Host-set max: clamped to [max(2, present), 20], and it fills up.
 {
   const r = game.createRoom('chill');
   game.addPlayer(r, 'A'); game.addPlayer(r, 'B'); game.addPlayer(r, 'C');
-  assert.equal(game.enoughPlayers(r), false, '3 players is not enough');
-  game.addPlayer(r, 'D');
-  assert.equal(game.enoughPlayers(r), true, '4 players can start');
+  assert.equal(game.setMax(r, 2), 3, "can't set max below who's present");
+  assert.equal(game.setMax(r, 99), 20, 'capped at 20');
+  assert.equal(game.setMax(r, 5), 5, 'set to 5');
+  assert.equal(game.roomFull(r), false, '3 of 5 is not full');
+  game.addPlayer(r, 'D'); game.addPlayer(r, 'E');
+  assert.equal(game.roomFull(r), true, '5 of 5 is full');
 }
 
 console.log('ok — all game checks passed');

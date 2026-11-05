@@ -145,7 +145,9 @@ function Lobby({ state, me, isHost, leave }) {
   const you = state.players.find((p) => p.id === me);
   const needMyConsent = state.needsConsent && you && !you.consented;
   const waiting = state.players.filter((p) => p.connected && !p.consented).length;
-  const enough = state.players.filter((p) => p.connected).length >= 4;
+  const connected = state.players.filter((p) => p.connected).length;
+  const enough = connected >= 2;
+  const max = state.maxPlayers ?? 10;
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
@@ -173,6 +175,17 @@ function Lobby({ state, me, isHost, leave }) {
         ))}
       </div>
 
+      <div className="maxrow">
+        <span className="muted">{connected} / {max} players</span>
+        {isHost && (
+          <div className="stepper">
+            <button onClick={() => socket.emit('setMax', { max: max - 1 })} disabled={max <= Math.max(2, connected)}>−</button>
+            <span>max {max}</span>
+            <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= 20}>+</button>
+          </div>
+        )}
+      </div>
+
       <Packs packs={state.packs || []} isHost={isHost} />
 
       {needMyConsent && (
@@ -182,7 +195,7 @@ function Lobby({ state, me, isHost, leave }) {
       {isHost ? (
         <button className="btn primary" disabled={!enough || waiting > 0}
           onClick={() => socket.emit('start')}>
-          {!enough ? 'Need 4+ players' : waiting > 0 ? `Waiting on ${waiting} to opt in` : 'Start game'}
+          {!enough ? 'Need 2+ players' : waiting > 0 ? `Waiting on ${waiting} to opt in` : 'Start game'}
         </button>
       ) : (
         <p className="muted center">Waiting for the host to start…</p>

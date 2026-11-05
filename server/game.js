@@ -32,6 +32,7 @@ export function createRoom(mode) {
     players: new Map(), // id -> player
     deck: shuffled(promptsForMode(mode)),
     deckIndex: 0,
+    maxPlayers: 10, // host-adjustable cap
     unlockedPacks: new Set(), // purchased (stubbed) packs
     enabledPacks: new Set(),  // unlocked packs switched on for this room
     prompt: null,
@@ -124,9 +125,24 @@ export function allConsented(room) {
   return [...room.players.values()].filter((p) => p.connected).every((p) => p.consented);
 }
 
-const MIN_PLAYERS = 4;
+const MIN_PLAYERS = 2;        // minimum to start a game
+export const MIN_MAX = 2;     // smallest cap a host can set
+export const MAX_MAX = 20;    // largest cap
+
+export function connectedCount(room) {
+  return [...room.players.values()].filter((p) => p.connected).length;
+}
 export function enoughPlayers(room) {
-  return [...room.players.values()].filter((p) => p.connected).length >= MIN_PLAYERS;
+  return connectedCount(room) >= MIN_PLAYERS;
+}
+export function roomFull(room) {
+  return connectedCount(room) >= room.maxPlayers;
+}
+// Host sets the cap; it can't go below who's already here, or outside [2, 20].
+export function setMax(room, n) {
+  const floor = Math.max(MIN_MAX, connectedCount(room));
+  room.maxPlayers = Math.min(MAX_MAX, Math.max(floor, Math.floor(Number(n)) || floor));
+  return room.maxPlayers;
 }
 
 function activePlayers(room) {
@@ -312,6 +328,7 @@ export function snapshot(room) {
     round: room.round,
     hostId: room.hostId,
     needsConsent: CONSENT_MODES.includes(room.mode),
+    maxPlayers: room.maxPlayers,
     packs: packCatalog(room),
     players: [...room.players.values()].map((p) => ({
       id: p.id, name: p.name, connected: p.connected, consented: p.consented, tokens: p.tokens,

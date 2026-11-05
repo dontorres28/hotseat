@@ -55,6 +55,7 @@ io.on('connection', (socket) => {
     const room = game.getRoom(code);
     if (!room) return ack?.({ ok: false, error: "That room code doesn't exist." });
     if (room.phase !== 'lobby') return ack?.({ ok: false, error: 'That game already started.' });
+    if (game.roomFull(room)) return ack?.({ ok: false, error: 'That room is full.' });
     const player = game.addPlayer(room, name);
     ack?.({ ok: true, code: room.code, playerId: player.id });
     join(room, player);
@@ -104,6 +105,13 @@ io.on('connection', (socket) => {
   });
   packAction('unlockPack', game.unlockPack);
   packAction('togglePack', game.togglePack);
+
+  socket.on('setMax', ({ max }) => {
+    if (!bound) return;
+    const room = game.getRoom(bound.code);
+    if (!room || room.hostId !== bound.playerId || room.phase !== 'lobby') return;
+    game.setMax(room, max); broadcast(room);
+  });
 
   socket.on('submit', ({ voteFor, predict }) => {
     if (!bound) return;

@@ -4,7 +4,7 @@ A no-download party game. One phone per person, a room code to join. You don't
 answer questions — you **predict your friends**, and bet on who the group will
 pick. Read the room right and you're safe. Miss it and you take the hit.
 
-Plays 4 to 20 people, sober or drinking.
+Plays 2 to 20 people (the host sets the room's max), sober or drinking.
 
 ## How a round works
 

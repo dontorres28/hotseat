@@ -154,6 +154,18 @@ body {
 .chip { background: var(--card); border: 2px solid var(--line); padding: 10px 14px; border-radius: 999px; font-weight: 700; }
 .chip.off { opacity: 0.4; }
 
+.maxrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.maxrow > span { font-weight: 700; }
+.stepper { display: flex; align-items: center; gap: 4px; background: var(--card); border: 2px solid var(--line); border-radius: 12px; padding: 4px; }
+.stepper button {
+  width: 34px; height: 34px; border-radius: 9px; border: none; background: var(--line); color: var(--cream);
+  font: inherit; font-size: 22px; line-height: 1; display: grid; place-items: center;
+  transition: transform 0.08s ease, opacity 0.15s ease;
+}
+.stepper button:active { transform: scale(0.92); }
+.stepper button:disabled { opacity: 0.35; }
+.stepper > span { min-width: 64px; text-align: center; font-weight: 700; font-size: 14px; }
+
 /* --- Prompt packs --- */
 .packs { display: flex; flex-direction: column; gap: 8px; }
 .pack-row {
