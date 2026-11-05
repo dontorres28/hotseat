@@ -365,17 +365,21 @@ export function recap(room) {
     const max = Math.max(0, ...players.map((p) => p[key]));
     return max > 0 ? players.filter((p) => p[key] === max).map((p) => p.name) : [];
   };
+  const duel = room.mode === 'duel'; // no predictions or traitor in duel
   return {
     rounds: room.round,
+    duel,
     awards: [
       { title: 'Most Roasted', emoji: '🔥', winners: award('timesInHotSeat'), stat: 'times in the hot seat' },
-      { title: 'Best Mind Reader', emoji: '🔮', winners: award('correctPredictions'), stat: 'rooms read right' },
-      { title: 'Biggest Traitor', emoji: '😈', winners: award('traitorWins'), stat: 'traitor missions pulled off' },
+      ...(duel ? [] : [
+        { title: 'Best Mind Reader', emoji: '🔮', winners: award('correctPredictions'), stat: 'rooms read right' },
+        { title: 'Biggest Traitor', emoji: '😈', winners: award('traitorWins'), stat: 'traitor missions pulled off' },
+      ]),
       { title: 'The Tank', emoji: '🍺', winners: award('sips'), stat: 'sips taken' },
     ],
     scoreboard: players
       .map((p) => ({ name: p.name, reads: p.correctPredictions, hotseat: p.timesInHotSeat, sips: p.sips }))
-      .sort((a, b) => b.reads - a.reads),
+      .sort((a, b) => (duel ? b.hotseat - a.hotseat : b.reads - a.reads)),
   };
 }
 

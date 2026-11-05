@@ -504,10 +504,10 @@ function Recap({ recap, leave, isHost }) {
       </div>
 
       <table className="score">
-        <thead><tr><th>Player</th><th>Reads</th><th>🔥</th><th>🍺</th></tr></thead>
+        <thead><tr><th>Player</th>{!recap.duel && <th>Reads</th>}<th>🔥</th><th>🍺</th></tr></thead>
         <tbody>
           {recap.scoreboard.map((s) => (
-            <tr key={s.name}><td>{s.name}</td><td>{s.reads}</td><td>{s.hotseat}</td><td>{s.sips}</td></tr>
+            <tr key={s.name}><td>{s.name}</td>{!recap.duel && <td>{s.reads}</td>}<td>{s.hotseat}</td><td>{s.sips}</td></tr>
           ))}
         </tbody>
       </table>
