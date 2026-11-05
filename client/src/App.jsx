@@ -147,7 +147,7 @@ function Lobby({ state, me, isHost, leave }) {
   const waiting = state.players.filter((p) => p.connected && !p.consented).length;
   const connected = state.players.filter((p) => p.connected).length;
   const enough = connected >= 2;
-  const max = state.maxPlayers ?? 10;
+  const max = state.maxPlayers ?? 20;
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;

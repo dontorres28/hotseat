@@ -32,7 +32,7 @@ export function createRoom(mode) {
     players: new Map(), // id -> player
     deck: shuffled(promptsForMode(mode)),
     deckIndex: 0,
-    maxPlayers: 10, // host-adjustable cap
+    maxPlayers: 20, // host-adjustable cap (default = ceiling)
     unlockedPacks: new Set(), // purchased (stubbed) packs
     enabledPacks: new Set(),  // unlocked packs switched on for this room
     prompt: null,
