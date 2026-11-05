@@ -103,32 +103,36 @@ function Home({ setError, error }) {
       <div className="center" style={{ marginTop: 24 }}><Logo /></div>
       <p className="tagline">Don't answer. Predict your friends.</p>
 
-      <div className="tabs">
-        <button className={tab === 'start' ? 'tab on' : 'tab'} onClick={() => setTab('start')}>Start a room</button>
-        <button className={tab === 'join' ? 'tab on' : 'tab'} onClick={() => setTab('join')}>Join</button>
+      <div className="seg" data-active={tab}>
+        <span className="seg-ind" aria-hidden="true" />
+        <button className="seg-btn" onClick={() => setTab('start')}>Start a room</button>
+        <button className="seg-btn" onClick={() => setTab('join')}>Join</button>
       </div>
 
       <input className="field" placeholder="Your name" maxLength={20} value={name}
         onChange={(e) => { setName(e.target.value); setError(''); }} />
 
-      {tab === 'start' ? (
-        <>
-          <div className="modes">
-            {MODES.map((m, i) => (
-              <button key={m.id} style={{ '--i': i }} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
-                <strong>{m.emoji} {m.name}</strong><span>{m.blurb}</span>
-              </button>
-            ))}
-          </div>
-          <button className="btn primary" onClick={create}>Create room</button>
-        </>
-      ) : (
-        <>
-          <input className="field code-in" placeholder="CODE" maxLength={4} value={joinCode}
-            onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setError(''); }} />
-          <button className="btn primary" onClick={join}>Join room</button>
-        </>
-      )}
+      <div key={tab} className="tab-body">
+        {tab === 'start' ? (
+          <>
+            <div className="modes">
+              {MODES.map((m, i) => (
+                <button key={m.id} style={{ '--i': i }} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
+                  <span className="mode-txt"><strong>{m.emoji} {m.name}</strong><span>{m.blurb}</span></span>
+                  <span className="mode-check" aria-hidden="true" />
+                </button>
+              ))}
+            </div>
+            <button className="btn primary" onClick={create}>Create room</button>
+          </>
+        ) : (
+          <>
+            <input className="field code-in" placeholder="CODE" maxLength={4} value={joinCode}
+              onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setError(''); }} />
+            <button className="btn primary" onClick={join}>Join room</button>
+          </>
+        )}
+      </div>
 
       {error && <p className="error">{error}</p>}
       <p className="fine">18+. Know your limit. There's always a non-drinking challenge, never required to drink.</p>
