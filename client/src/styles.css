@@ -162,6 +162,13 @@ body {
 /* --- Lobby --- */
 .topbar { display: flex; align-items: center; justify-content: space-between; }
 .leave { background: none; border: none; color: var(--muted); font: inherit; font-weight: 700; }
+.leave-float {
+  position: fixed; top: 14px; right: 14px; z-index: 40;
+  background: rgba(22, 21, 20, 0.8); backdrop-filter: blur(8px);
+  border: 1px solid var(--line); color: var(--muted); font: inherit; font-weight: 700; font-size: 13px;
+  padding: 7px 12px; border-radius: 999px;
+}
+.leave-float:active { transform: scale(0.95); }
 .bigcode {
   font-family: Anton, sans-serif; font-size: 72px; letter-spacing: 8px; color: var(--red);
   transform: skewX(-6deg); background: none; border: none; cursor: pointer; padding: 0 6px;

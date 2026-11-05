@@ -137,6 +137,16 @@ io.on('connection', (socket) => {
   // Personal "not drinking? swap for a dare" — returns a non-drinking dare.
   socket.on('swapDare', (_data, ack) => ack?.(game.randomDare()));
 
+  // Explicit leave — remove the player and free their slot.
+  socket.on('leaveRoom', (_data, ack) => {
+    if (bound) {
+      const room = game.getRoom(bound.code);
+      if (room) { game.removePlayer(room, bound.playerId); socket.leave(room.code); broadcast(room); }
+      bound = null;
+    }
+    ack?.({ ok: true });
+  });
+
   socket.on('disconnect', () => {
     if (!bound) return;
     const room = game.getRoom(bound.code);

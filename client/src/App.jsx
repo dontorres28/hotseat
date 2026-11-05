@@ -45,7 +45,11 @@ export default function App() {
     return () => socket.off();
   }, []);
 
-  const leave = () => { localStorage.removeItem(LS); setMe(null); setCode(null); setState(null); setRecap(null); };
+  const leave = () => {
+    socket.emit('leaveRoom');
+    localStorage.removeItem(LS);
+    setMe(null); setCode(null); setState(null); setRecap(null); setSecret(null);
+  };
 
   if (!state || !me) return <Home setError={setError} error={error} />;
 
@@ -61,7 +65,8 @@ export default function App() {
     : <Reveal state={state} me={me} isHost={isHost} />;
   else screen = <Wordmark sub="loading…" />;
 
-  return <>{screen}{toast && <Toast t={toast} />}</>;
+  const inGame = !recap && (state.phase === 'prompt' || state.phase === 'reveal');
+  return <>{screen}{toast && <Toast t={toast} />}{inGame && <button className="leave-float" onClick={leave}>Leave</button>}</>;
 }
 
 // Shown when you're told to drink — swap the sip for a non-drinking dare.
