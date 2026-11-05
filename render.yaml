@@ -1,0 +1,14 @@
+# Render blueprint. In Render: New → Blueprint → point at this repo.
+# One web service builds the client and runs the Node server that serves it
+# (static files + Socket.IO on the same port). Render injects PORT.
+services:
+  - type: web
+    name: hotseat
+    runtime: node
+    plan: free            # spins down when idle (~30s cold start, live rooms drop). Bump to "starter" for always-on.
+    buildCommand: npm run build
+    startCommand: npm start
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "22"

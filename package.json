@@ -1,0 +1,10 @@
+{
+  "name": "hotseat",
+  "version": "0.1.0",
+  "private": true,
+  "description": "HOT SEAT — realtime party game. Root scripts build the client and run the server that serves it.",
+  "scripts": {
+    "build": "npm --prefix client install --include=dev && npm --prefix client run build && npm --prefix server install --omit=dev",
+    "start": "npm --prefix server start"
+  }
+}

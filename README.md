@@ -61,8 +61,14 @@ cd client && npm install && npm run build   # outputs client/dist
 cd ../server && npm install && npm start      # serves dist + sockets on $PORT
 ```
 
-Any Node host (Railway, Render, Fly, a VPS) works. Set `PORT` if the platform
+Any Node host (Render, Railway, Fly, a VPS) works. Set `PORT` if the platform
 needs it; sockets use the same port.
+
+**Render (one click):** the repo ships a `render.yaml` blueprint. In Render →
+**New → Blueprint** → pick this repo → deploy. It runs `npm run build` (builds
+the client) then `npm start` (serves it + sockets). Defaults to the **free**
+plan, which spins down when idle — bump `plan:` to `starter` in `render.yaml`
+for always-on once you have players.
 
 ## Shipped vs. deferred
 
