@@ -166,21 +166,20 @@ function room4(mode = 'chill') {
   assert.deepEqual(snap.submittedIds, [a.id], 'only submitted ids, not their choices');
 }
 
-// Prompt packs: locked until unlocked; unlocked+enabled packs feed the deck.
+// Prompt packs: free toggles that feed the deck.
 {
   const r = game.createRoom('chill');
-  assert.equal(game.unlockPack(r, 'nope'), false, 'unknown pack is rejected');
-  assert.equal(game.togglePack(r, 'college'), false, 'cannot toggle a locked pack');
+  assert.equal(game.togglePack(r, 'nope'), false, 'unknown pack is rejected');
   game.buildDeck(r);
   const base = r.deck.length;
-  assert.ok(game.unlockPack(r, 'college'), 'known pack unlocks');
+  assert.ok(game.togglePack(r, 'college'), 'enable a pack');
   game.buildDeck(r);
-  assert.ok(r.deck.length > base, 'unlocked+enabled pack adds prompts');
-  assert.ok(game.togglePack(r, 'college'), 'unlocked pack toggles off');
+  assert.ok(r.deck.length > base, 'enabled pack adds prompts');
+  assert.ok(game.togglePack(r, 'college'), 'toggle it back off');
   game.buildDeck(r);
   assert.equal(r.deck.length, base, 'disabled pack drops back out of the deck');
   const cat = game.packCatalog(r).find((p) => p.id === 'college');
-  assert.ok(cat.unlocked && !cat.enabled, 'catalog reflects unlocked-but-off');
+  assert.ok(cat && !cat.enabled && cat.name && cat.price === undefined, 'catalog is enable-only, no price');
 }
 
 // Minimum players to start is 2.

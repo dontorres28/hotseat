@@ -243,23 +243,16 @@ function Packs({ packs, isHost }) {
         <span className="chev">{open ? '▾' : '▸'}</span>
       </button>
       {open && packs.map((p, i) => (
-        <div key={p.id} style={{ '--i': i }} className={'pack-row' + (p.enabled ? ' on' : '')}>
+        <button key={p.id} style={{ '--i': i }} className={'pack-row' + (p.enabled ? ' on' : '')}
+          onClick={() => socket.emit('togglePack', { packId: p.id })}>
           <div className="pack-meta">
             <strong>{p.emoji} {p.name}</strong>
             <span className="muted">{p.blurb}</span>
           </div>
-          {p.unlocked ? (
-            <button className={'pack-btn' + (p.enabled ? ' on' : '')} onClick={() => socket.emit('togglePack', { packId: p.id })}>
-              {p.enabled ? 'On' : 'Off'}
-            </button>
-          ) : (
-            <button className="pack-btn buy" onClick={() => socket.emit('unlockPack', { packId: p.id })}>
-              Unlock ${p.price}
-            </button>
-          )}
-        </div>
+          <span className={'pack-btn' + (p.enabled ? ' on' : '')}>{p.enabled ? 'On' : 'Off'}</span>
+        </button>
       ))}
-      {open && <p className="fine">Demo unlock, no real charge yet. Payments slot in here.</p>}
+      {open && <p className="fine">Mix in as many packs as you like.</p>}
     </div>
   );
 }

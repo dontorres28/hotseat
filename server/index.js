@@ -104,7 +104,6 @@ io.on('connection', (socket) => {
     if (!room || room.hostId !== bound.playerId || room.phase !== 'lobby') return;
     if (fn(room, packId)) broadcast(room);
   });
-  packAction('unlockPack', game.unlockPack);
   packAction('togglePack', game.togglePack);
 
   socket.on('setMax', ({ max }) => {

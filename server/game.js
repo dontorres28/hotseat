@@ -42,8 +42,7 @@ export function createRoom(mode) {
     deck: shuffled(promptsForMode(mode)),
     deckIndex: 0,
     maxPlayers: 20, // host-adjustable cap (default = ceiling)
-    unlockedPacks: new Set(), // purchased (stubbed) packs
-    enabledPacks: new Set(),  // unlocked packs switched on for this room
+    enabledPacks: new Set(), // packs switched on for this room
     prompt: null,
     wildcard: null,
     submissions: new Map(), // playerId -> { voteFor, predict }
@@ -59,40 +58,29 @@ export function getRoom(code) {
   return rooms.get(String(code || '').toUpperCase());
 }
 
-// Rebuild the deck from the mode plus any unlocked+enabled packs. Called at
-// game start so lobby pack choices take effect.
+// Rebuild the deck from the mode plus any enabled packs. Called at game start
+// so lobby pack choices take effect.
 export function buildDeck(room) {
   let prompts = [...promptsForMode(room.mode)];
-  for (const id of room.enabledPacks) {
-    if (room.unlockedPacks.has(id)) prompts = prompts.concat(packById(id)?.prompts ?? []);
-  }
+  for (const id of room.enabledPacks) prompts = prompts.concat(packById(id)?.prompts ?? []);
   room.deck = shuffled(prompts);
   room.deckIndex = 0;
 }
 
-// Stubbed purchase. Marks a pack unlocked + enabled for this room.
-// ponytail: wire Stripe Checkout + a webhook that calls this on payment success;
-// no real charge happens here.
-export function unlockPack(room, packId) {
-  if (!packById(packId)) return false;
-  room.unlockedPacks.add(packId);
-  room.enabledPacks.add(packId);
-  return true;
-}
-
-// Toggle an already-unlocked pack on/off for this room.
+// Toggle a pack on/off for this room. Packs are free — just a selection.
+// ponytail: no paywall for now; add Stripe here later if packs go premium.
 export function togglePack(room, packId) {
-  if (!room.unlockedPacks.has(packId)) return false;
+  if (!packById(packId)) return false;
   if (room.enabledPacks.has(packId)) room.enabledPacks.delete(packId);
   else room.enabledPacks.add(packId);
   return true;
 }
 
-// Catalog with this room's purchase/enable state, for the lobby UI.
+// Catalog with this room's enabled state, for the lobby UI.
 export function packCatalog(room) {
   return PACKS.map((p) => ({
-    id: p.id, name: p.name, emoji: p.emoji, price: p.price, blurb: p.blurb,
-    unlocked: room.unlockedPacks.has(p.id), enabled: room.enabledPacks.has(p.id),
+    id: p.id, name: p.name, emoji: p.emoji, blurb: p.blurb,
+    enabled: room.enabledPacks.has(p.id),
   }));
 }
 
