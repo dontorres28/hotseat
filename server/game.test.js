@@ -10,10 +10,14 @@ import { CHALLENGES, challengeMinPlayers } from './content.js';
   const r = game.createRoom('duel');
   const a = game.addPlayer(r, 'A', { host: true });
   const b = game.addPlayer(r, 'B');
-  game.dealPrompt(r); r.pair = [a.id, b.id];
-  game.submit(r, a.id, a.id); game.submit(r, b.id, a.id);
-  const rev = game.reveal(r);
-  assert.ok(challengeMinPlayers(rev.challenge) <= 2, `2-player challenge must fit 2, got: ${rev.challenge}`);
+  // Many draws in a 2-player room: nothing may reference 3+ people.
+  for (let i = 0; i < 80; i++) {
+    game.dealPrompt(r); r.pair = [a.id, b.id];
+    game.submit(r, a.id, a.id); game.submit(r, b.id, a.id);
+    const rev = game.reveal(r);
+    assert.ok(challengeMinPlayers(rev.challenge) <= 2, `2-player challenge must fit 2, got: ${rev.challenge}`);
+    assert.ok(challengeMinPlayers(game.randomDare(r)) <= 2, `2-player dare must fit 2`);
+  }
 }
 
 // Challenge deck: 100+, no duplicates.

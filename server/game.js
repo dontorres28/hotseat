@@ -5,8 +5,11 @@
 
 import { promptsForMode, shuffled, CHALLENGES, DARES, WILDCARDS, CONSENT_MODES, PACKS, packById, challengeMinPlayers } from './content.js';
 
-export function randomDare() {
-  return DARES[Math.floor(Math.random() * DARES.length)];
+export function randomDare(room) {
+  const n = room ? connectedCount(room) : 20;
+  const fit = DARES.filter((d) => challengeMinPlayers(d) <= n);
+  const pool = fit.length ? fit : DARES;
+  return pool[Math.floor(Math.random() * pool.length)];
 }
 
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no easily-confused chars

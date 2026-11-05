@@ -136,7 +136,7 @@ io.on('connection', (socket) => {
   });
 
   // Personal "not drinking? swap for a dare" — returns a non-drinking dare.
-  socket.on('swapDare', (_data, ack) => ack?.(game.randomDare()));
+  socket.on('swapDare', (_data, ack) => ack?.(game.randomDare(bound && game.getRoom(bound.code))));
 
   // After a player leaves: if the rest are all in, don't stall — reveal.
   const afterLeave = (room) => {
