@@ -114,8 +114,8 @@ function Home({ setError, error }) {
       {tab === 'start' ? (
         <>
           <div className="modes">
-            {MODES.map((m) => (
-              <button key={m.id} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
+            {MODES.map((m, i) => (
+              <button key={m.id} style={{ '--i': i }} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
                 <strong>{m.emoji} {m.name}</strong><span>{m.blurb}</span>
               </button>
             ))}
@@ -162,8 +162,8 @@ function Lobby({ state, me, isHost, leave }) {
       </div>
 
       <div className="players">
-        {state.players.map((p) => (
-          <div key={p.id} className={'chip' + (p.connected ? '' : ' off')}>
+        {state.players.map((p, i) => (
+          <div key={p.id} style={{ '--i': i }} className={'chip' + (p.connected ? '' : ' off')}>
             {p.name}{p.id === state.hostId ? ' 👑' : ''}{state.needsConsent && p.consented ? ' ✅' : ''}
           </div>
         ))}
@@ -200,8 +200,8 @@ function Packs({ packs, isHost }) {
   return (
     <div className="packs">
       <p className="label">Prompt packs <span className="muted">(spice up the deck)</span></p>
-      {packs.map((p) => (
-        <div key={p.id} className={'pack-row' + (p.enabled ? ' on' : '')}>
+      {packs.map((p, i) => (
+        <div key={p.id} style={{ '--i': i }} className={'pack-row' + (p.enabled ? ' on' : '')}>
           <div className="pack-meta">
             <strong>{p.emoji} {p.name}</strong>
             <span className="muted">{p.blurb}</span>
@@ -271,8 +271,8 @@ function Round({ state, me, isHost, secret }) {
 function PickGrid({ players, value, onPick, accent }) {
   return (
     <div className="grid">
-      {players.map((p) => (
-        <button key={p.id} className={'pick ' + accent + (value === p.id ? ' on' : '')} onClick={() => onPick(p.id)}>
+      {players.map((p, i) => (
+        <button key={p.id} style={{ '--i': i }} className={'pick ' + accent + (value === p.id ? ' on' : '')} onClick={() => onPick(p.id)}>
           {p.name}
         </button>
       ))}
@@ -305,7 +305,7 @@ function Reveal({ state, me, isHost }) {
         {r.breakdown.map((b, i) => (
           <div key={i} className="bar-row">
             <span className="bar-name">{b.name}</span>
-            <div className="bar-track"><div className="bar-fill" style={{ width: `${(b.votes / maxVotes) * 100}%` }} /></div>
+            <div className="bar-track"><div className="bar-fill" style={{ '--w': b.votes / maxVotes, '--i': i }} /></div>
             <span className="bar-votes">{b.votes}</span>
           </div>
         ))}
@@ -370,8 +370,8 @@ function Recap({ recap, leave, isHost }) {
       <p className="tagline">{recap.rounds} rounds. Here's the damage.</p>
 
       <div className="awards">
-        {recap.awards.map((a) => (
-          <div key={a.title} className="award">
+        {recap.awards.map((a, i) => (
+          <div key={a.title} style={{ '--i': i }} className="award">
             <span className="award-emoji">{a.emoji}</span>
             <div>
               <strong>{a.title}</strong>

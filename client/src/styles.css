@@ -6,9 +6,27 @@
   --muted: #8a857c;
   --card: #161514;
   --line: #2a2825;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1); /* smooth decelerate */
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+button { touch-action: manipulation; } /* kill the 300ms tap delay */
+
+/* Respect the OS reduce-motion setting. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Staggered entrance for lists/grids — set --i on each item. */
+@keyframes rise-item { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: none; } }
+.chip, .mode, .pack-row, .pick, .award {
+  animation: rise-item 0.3s var(--ease) backwards; /* backwards: don't pin final opacity (keeps .chip.off dim) */
+  animation-delay: calc(var(--i, 0) * 35ms);
+}
 
 body {
   background:
@@ -31,7 +49,7 @@ body {
   flex-direction: column;
   gap: 16px;
   min-height: 100dvh;
-  animation: rise 0.34s ease both;
+  animation: rise 0.34s var(--ease) both;
 }
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 
@@ -154,7 +172,12 @@ body {
 .bar-row { display: flex; align-items: center; gap: 10px; }
 .bar-name { width: 80px; font-weight: 800; font-size: 14px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bar-track { flex: 1; background: var(--card); border-radius: 8px; height: 22px; overflow: hidden; border: 1px solid var(--line); }
-.bar-fill { height: 100%; background: var(--red); transition: width 0.6s ease; }
+/* Animate transform (GPU) instead of width (layout+paint). --w is the 0..1 ratio. */
+.bar-fill {
+  height: 100%; width: 100%; background: var(--red); transform-origin: left; will-change: transform;
+  animation: grow 0.55s var(--ease) both; animation-delay: calc(var(--i, 0) * 55ms);
+}
+@keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(var(--w, 1)); } }
 .bar-votes { width: 20px; text-align: right; color: var(--muted); font-weight: 800; }
 
 .verdict { border-radius: 16px; padding: 18px; text-align: center; }
@@ -188,7 +211,9 @@ body {
   width: calc(100% - 36px); max-width: 500px; z-index: 50;
   background: var(--red); color: var(--cream); border-radius: 14px; padding: 12px 16px;
   display: flex; flex-direction: column; gap: 2px; box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+  animation: toast-in 0.32s var(--ease) both;
 }
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 16px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .toast strong { font-size: 15px; }
 .toast span { font-size: 13px; opacity: 0.92; }
 
