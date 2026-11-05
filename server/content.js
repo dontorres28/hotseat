@@ -1,7 +1,7 @@
 // Prompts by mode. There is no "correct" answer — the group's majority IS the answer.
 // Keep each prompt about the people in the room.
 
-export const MODES = ['chill', 'roast', 'spicy', 'chaos'];
+export const MODES = ['chill', 'roast', 'spicy', 'chaos', 'duel'];
 
 // Modes that require every phone to opt in before the room can start.
 export const CONSENT_MODES = ['spicy', 'chaos'];
@@ -119,40 +119,132 @@ export const WILDCARDS = [
 // Challenges handed out instead of (or on top of) a sip. No repeats within a game.
 // Mix of drinks, dares and chaos. There's always a non-drinking option.
 export const CHALLENGES = [
+  // --- Drinks: straight ---
   "Take a sip.",
+  "Take two sips.",
+  "Take a big gulp.",
+  "Finish your drink.",
+  "Finish your drink if it's less than half full.",
+  "Take a drink with your non-dominant hand. Spill and take another.",
+  "Take a drink with your eyes closed.",
+  "Take as many sips as the current round number (max three).",
+  "Finish your drink, or pass it to someone who will.",
+  "Take a sip and dedicate it to your worst decision this year.",
+  // --- Drinks: hand them out ---
   "Hand out two sips however you like.",
+  "Hand out three sips however you like.",
   "Pick someone to drink with you.",
+  "Pick two people to each take a sip.",
   "Everyone on your left takes a sip.",
+  "Everyone on your right takes a sip.",
+  "Pour a splash of your drink into someone else's cup. They finish it.",
+  "The person on your right picks who drinks next.",
+  "Make everyone to your right take a sip.",
+  // --- Drinks: whole room ---
+  "Social! Everyone takes a sip with you.",
   "Waterfall: everyone drinks, and no one stops until you do.",
-  "Do your best impression of someone else in the room.",
-  "Give the person on your right a genuine compliment, then take a sip.",
-  "Swap seats with the person on your left.",
-  "Do 10 squats while naming your exes out loud.",
-  "Show the group your last Google search. No scrolling away.",
-  "Show the room your screen-time number.",
-  "Talk about yourself in the third person until the next reveal.",
-  "Whisper everything you say until the next reveal.",
-  "The group gives you a nickname for the night. Only answer to it.",
+  "Everyone who's single takes a sip.",
+  "Everyone in a relationship takes a sip.",
+  "Everyone wearing black takes a sip.",
+  "Everyone wearing white takes a sip.",
+  "Everyone on their phone right now takes a sip.",
+  "Everyone younger than you takes a sip.",
+  "Everyone older than you takes a sip.",
+  "Everyone who has kissed someone in this room takes a sip.",
+  "Everyone who's left for the bathroom since the game started drinks.",
+  "Toast to someone in the room. Everyone drinks to them.",
+  // --- Drinks: mini-games ---
+  "The person on your left decides: you take 1, 2, or 3 sips.",
+  "Rock paper scissors the person on your left. Loser drinks.",
+  "Thumb war the person across from you. Loser drinks.",
+  "Arm wrestle the person next to you. Loser takes two sips.",
   "Staring contest with the person across from you. Blink or laugh and you drink.",
-  "Let the person on your right send one text from your phone to anyone they pick.",
-  "Keep one hand on your head until the next reveal.",
+  "Flip a coin. Call it wrong and take two sips.",
+  "Name five car brands in ten seconds, or take two sips.",
+  "Name five pizza toppings in ten seconds, or take two sips.",
+  "Say the alphabet backwards. Mess up and take a sip.",
+  "Pick a category and go around the room naming things. First to blank takes a sip.",
+  "Start a nose goes: touch your nose. Last person to copy you drinks.",
+  "Say 'go', then the last person to raise their hand drinks.",
+  "Guess who lands in the hot seat next. Wrong and take two sips.",
+  // --- Drinks: rules & buddies ---
+  "Make a house rule now. Anyone who breaks it drinks, you included.",
+  "Pick a drinking buddy. For the rest of the game, when one of you drinks, so does the other.",
+  "You're the bartender this round: anyone who drinks, you take one too.",
+  "Cheers the person across from you. You both drink.",
+  "You and the youngest person here both drink.",
+  "Take a sip every time someone says your name until the next reveal.",
+  "Take a sip every time you laugh until the next reveal.",
+  "Take a sip each time you say 'um' or 'like' until the next reveal.",
+  "Sip every time someone swears until the next reveal.",
+  "Hold your pinky up until the next reveal. Forget and you drink.",
+  "Take a sip, then pick who takes the next challenge.",
+  "Never have I ever: say one true thing. Anyone who's done it drinks.",
+  "Give out a sip for every ring, watch or bracelet you're wearing.",
+  "Take a sip for every sibling you have (max three).",
+  // --- Dares: drink-or-do ---
+  "Do 10 pushups, or take two sips.",
+  "Let the person across from you give you a dare, or take two sips.",
+  "Reveal who you last texted, or take two sips.",
+  "Tell the group something you've never told them, or take two sips.",
+  "Text the last person you texted a single heart emoji, or take two sips.",
+  "Let the person on your right post one word to your story, or take two sips.",
+  // --- Dares: performance ---
+  "Do your best impression of someone else in the room.",
   "Talk in an accent until the next reveal. Drop it and you drink.",
   "Serenade the person across from you for 15 seconds.",
+  "Sing your next sentence like it's a musical.",
+  "Do your best catwalk to the nearest door and back.",
+  "Do your best evil villain laugh.",
+  "Do a 20-second infomercial for the nearest object.",
+  "Do a 15-second stand-up bit roasting the host.",
   "Dramatically re-enact how you think you'll die.",
-  "Read your most recent text out loud, including who it's to.",
-  "Pick a contact at random and send them a single emoji.",
-  "Swap one visible item of clothing with the person on your left.",
-  "Propose to the nearest object like you mean it.",
-  "The person on your left decides: you take 1, 2, or 3 sips.",
-  "The group bans you from one word until the end of the night. Slip up, drink.",
+  "Give a dramatic acceptance speech for Hot Seat of the Night.",
+  "Do your best model pose and hold it until the next reveal.",
+  "Act out your most-used emoji.",
+  "Imitate the last person who spoke.",
+  "Give the person on your right a dramatic backstory on the spot.",
+  // --- Dares: speech rules ---
+  "Talk about yourself in the third person until the next reveal.",
+  "Whisper everything you say until the next reveal.",
+  "Speak only in questions until the next reveal.",
   "Narrate the room like a nature documentary until the next reveal.",
-  "Let the person across from you give you a dare, or take two sips instead.",
+  "Bark like a dog every time someone swears until the next reveal.",
+  "Let the group pick one word you must say before every sentence until the next reveal.",
+  "End every sentence with 'for legal reasons' until the next reveal.",
+  "The group bans you from one word until the end of the night. Slip up, drink.",
+  "Say the next three things on your mind out loud.",
+  "Compliment everyone in the room in one breath.",
+  // --- Dares: phone & props ---
+  "Show the group your last Google search. No scrolling away.",
+  "Show the room your screen-time number.",
+  "Read your most recent text out loud, including who it's to.",
+  "Show the group the last photo in your camera roll.",
+  "Let the person on your right send one text from your phone to anyone they pick.",
+  "Pick a contact at random and send them a single emoji.",
+  "Swap phones with the person on your left until the next reveal. No deleting anything.",
+  "Let someone draw a small doodle on the back of your hand.",
+  // --- Dares: physical & misc ---
+  "Keep one hand on your head until the next reveal.",
+  "Do 10 squats while naming your exes out loud.",
+  "Hold eye contact with the person on your left until the next reveal. Laugh and you drink.",
+  "Swap one visible item of clothing with the person on your left.",
+  "Swap seats with the person on your left.",
+  "Switch seats with someone and copy their energy for a round.",
+  "Propose to the nearest object like you mean it.",
+  "The group gives you a nickname for the night. Only answer to it.",
+  "Give the person on your right a genuine compliment, then take a sip.",
+  "Do an impression of the host until the next reveal.",
 ];
 
 export function promptsForMode(mode) {
   if (mode === 'chaos') {
     // Everything mixed.
     return [...PROMPTS.chill, ...PROMPTS.roast, ...PROMPTS.spicy];
+  }
+  if (mode === 'duel') {
+    // Head-to-head "who's more likely" — clean and roast prompts both work.
+    return [...PROMPTS.chill, ...PROMPTS.roast];
   }
   return PROMPTS[mode] ?? PROMPTS.chill;
 }

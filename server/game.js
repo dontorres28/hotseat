@@ -157,13 +157,21 @@ export function dealPrompt(room) {
   room.round += 1;
   room.prompt = room.deck[room.deckIndex++];
   room.submissions = new Map();
-  // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
-  const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
-  room.wildcard = roll ? WILDCARDS[Math.floor(Math.random() * WILDCARDS.length)] : null;
-  // The Traitor: one random player is secretly told to vote against the crowd.
-  // Needs a real crowd to hide in.
   const active = activePlayers(room);
-  room.traitorId = active.length >= 3 ? active[Math.floor(Math.random() * active.length)].id : null;
+  if (room.mode === 'duel') {
+    // Two players face off; no wildcard, no traitor.
+    const two = shuffled(active).slice(0, 2).map((p) => p.id);
+    room.pair = two.length === 2 ? two : null;
+    room.wildcard = null;
+    room.traitorId = null;
+  } else {
+    room.pair = null;
+    // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
+    const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
+    room.wildcard = roll ? WILDCARDS[Math.floor(Math.random() * WILDCARDS.length)] : null;
+    // The Traitor: one random player is secretly told to vote against the crowd.
+    room.traitorId = active.length >= 3 ? active[Math.floor(Math.random() * active.length)].id : null;
+  }
   room.phase = 'prompt';
   room.lastReveal = null;
 }
@@ -173,6 +181,12 @@ export function traitorId(room) {
 }
 
 export function submit(room, playerId, voteFor, predict) {
+  if (room.mode === 'duel') {
+    const pair = room.pair || [];
+    if (!pair.includes(voteFor)) voteFor = pair[0];
+    room.submissions.set(playerId, { voteFor, predict: voteFor });
+    return;
+  }
   const players = activePlayers(room);
   const ids = new Set(players.map((p) => p.id));
   // You can't vote for yourself; prediction can be anyone.
@@ -197,8 +211,41 @@ function drawChallenge(room) {
   return pick;
 }
 
+// Duel: two players face off, the room votes who's more likely, that player drinks.
+function revealDuel(room) {
+  const players = activePlayers(room);
+  const [a, b] = room.pair || [];
+  let va = 0, vb = 0;
+  for (const { voteFor } of room.submissions.values()) {
+    if (voteFor === a) va += 1; else if (voteFor === b) vb += 1;
+  }
+  const tie = va === vb;
+  const targetId = vb > va ? b : a;
+  const drinkers = tie ? [a, b] : [targetId];
+  for (const id of drinkers) { const p = room.players.get(id); if (p) { p.timesInHotSeat += 1; p.sips += 1; } }
+  const challenge = drawChallenge(room);
+  room.phase = 'reveal';
+  room.lastReveal = {
+    duel: true,
+    prompt: room.prompt,
+    round: room.round,
+    pair: [
+      { name: room.players.get(a)?.name, votes: va },
+      { name: room.players.get(b)?.name, votes: vb },
+    ],
+    tie,
+    targetId,
+    targetName: room.players.get(targetId)?.name,
+    drinkers: drinkers.map((id) => room.players.get(id)?.name),
+    challenge,
+    results: players.map((p) => ({ id: p.id, name: p.name, sips: drinkers.includes(p.id) ? 1 : 0 })),
+  };
+  return room.lastReveal;
+}
+
 // Tally votes, decide the hot seat, assign penalties, update running stats.
 export function reveal(room) {
+  if (room.mode === 'duel') return revealDuel(room);
   const players = activePlayers(room);
   const counts = new Map(players.map((p) => [p.id, 0]));
   for (const { voteFor } of room.submissions.values()) {
@@ -335,6 +382,10 @@ export function snapshot(room) {
     })),
     prompt: room.phase === 'prompt' ? room.prompt : null,
     wildcard: room.phase === 'prompt' ? room.wildcard : null,
+    duel: room.mode === 'duel',
+    pair: (room.phase === 'prompt' && room.pair)
+      ? room.pair.map((id) => ({ id, name: room.players.get(id)?.name }))
+      : null,
     submittedIds: room.phase === 'prompt' ? [...room.submissions.keys()] : [],
     reveal: room.phase === 'reveal' ? room.lastReveal : null,
   };

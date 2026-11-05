@@ -1,6 +1,13 @@
 // Run: node game.test.js  — plain asserts, no framework.
 import assert from 'node:assert';
 import * as game from './game.js';
+import { CHALLENGES } from './content.js';
+
+// Challenge deck: 100+, no duplicates.
+{
+  assert.ok(CHALLENGES.length >= 100, `expected 100+ challenges, got ${CHALLENGES.length}`);
+  assert.equal(new Set(CHALLENGES).size, CHALLENGES.length, 'challenges must be unique');
+}
 
 function room4(mode = 'chill') {
   const r = game.createRoom(mode);
@@ -178,6 +185,28 @@ function room4(mode = 'chill') {
   assert.equal(game.roomFull(r), false, '3 of 5 is not full');
   game.addPlayer(r, 'D'); game.addPlayer(r, 'E');
   assert.equal(game.roomFull(r), true, '5 of 5 is full');
+}
+
+// Duel mode: two face off, the more-voted one drinks; non-pair voters are safe.
+{
+  const { r, a, b, c, d } = room4('duel');
+  game.dealPrompt(r);
+  r.pair = [a.id, b.id]; // force the matchup
+  game.submit(r, a.id, a.id);
+  game.submit(r, b.id, a.id);
+  game.submit(r, c.id, a.id);
+  game.submit(r, d.id, b.id); // Ana 3, Ben 1
+  const rev = game.reveal(r);
+  assert.equal(rev.duel, true);
+  assert.equal(rev.targetName, 'Ana', 'more-voted of the pair is called out');
+  assert.equal(rev.results.find((x) => x.name === 'Ana').sips, 1, 'called-out drinks');
+  assert.equal(rev.results.find((x) => x.name === 'Cy').sips, 0, 'non-pair voters are safe');
+  // Tie -> both drink.
+  game.dealPrompt(r); r.pair = [a.id, b.id];
+  game.submit(r, a.id, a.id); game.submit(r, b.id, b.id);
+  game.submit(r, c.id, a.id); game.submit(r, d.id, b.id); // 2-2
+  const rev2 = game.reveal(r);
+  assert.ok(rev2.tie && rev2.drinkers.length === 2, 'a tie makes both drink');
 }
 
 console.log('ok — all game checks passed');

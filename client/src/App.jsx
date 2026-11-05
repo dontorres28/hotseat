@@ -2,10 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 import { socket } from './socket.js';
 
 const MODES = [
-  { id: 'chill', name: 'Chill', emoji: '😎', blurb: 'Clean and silly. Good for mixed groups.' },
-  { id: 'roast', name: 'Roast', emoji: '🔥', blurb: 'Savage but friendly. All about the room.' },
-  { id: 'spicy', name: 'Spicy', emoji: '🌶️', blurb: 'After dark. Every phone opts in first.' },
-  { id: 'chaos', name: 'Chaos', emoji: '🎲', blurb: 'Everything mixed, plus wildcard rounds.' },
+  { id: 'chill', name: 'Chill', emoji: '😎', blurb: 'Clean and silly.' },
+  { id: 'roast', name: 'Roast', emoji: '🔥', blurb: 'Savage but friendly.' },
+  { id: 'spicy', name: 'Spicy', emoji: '🌶️', blurb: 'After dark. Opt-in.' },
+  { id: 'chaos', name: 'Chaos', emoji: '🎲', blurb: 'Mixed + wildcards.' },
+  { id: 'duel', name: 'Duel', emoji: '⚔️', blurb: 'Face-off. 2 to 4.' },
 ];
 
 const LS = 'hotseat.session';
@@ -52,8 +53,12 @@ export default function App() {
   let screen;
   if (recap) screen = <Recap recap={recap} leave={leave} isHost={isHost} />;
   else if (state.phase === 'lobby') screen = <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
-  else if (state.phase === 'prompt') screen = <Round state={state} me={me} isHost={isHost} secret={secret} />;
-  else if (state.phase === 'reveal') screen = <Reveal state={state} me={me} isHost={isHost} />;
+  else if (state.phase === 'prompt') screen = state.duel
+    ? <DuelRound state={state} me={me} isHost={isHost} />
+    : <Round state={state} me={me} isHost={isHost} secret={secret} />;
+  else if (state.phase === 'reveal') screen = state.reveal?.duel
+    ? <DuelReveal state={state} me={me} isHost={isHost} />
+    : <Reveal state={state} me={me} isHost={isHost} />;
   else screen = <Wordmark sub="loading…" />;
 
   return <>{screen}{toast && <Toast t={toast} />}</>;
@@ -205,6 +210,7 @@ function Lobby({ state, me, isHost, leave }) {
 }
 
 function Packs({ packs, isHost }) {
+  const [open, setOpen] = useState(false);
   const enabled = packs.filter((p) => p.enabled);
   if (!isHost) {
     return enabled.length ? (
@@ -216,8 +222,11 @@ function Packs({ packs, isHost }) {
   }
   return (
     <div className="packs">
-      <p className="label">Prompt packs <span className="muted">(spice up the deck)</span></p>
-      {packs.map((p, i) => (
+      <button className="packs-toggle" onClick={() => setOpen((o) => !o)}>
+        <span>🎒 Prompt packs{enabled.length ? ` · ${enabled.length} on` : ''}</span>
+        <span className="chev">{open ? '▾' : '▸'}</span>
+      </button>
+      {open && packs.map((p, i) => (
         <div key={p.id} style={{ '--i': i }} className={'pack-row' + (p.enabled ? ' on' : '')}>
           <div className="pack-meta">
             <strong>{p.emoji} {p.name}</strong>
@@ -234,7 +243,84 @@ function Packs({ packs, isHost }) {
           )}
         </div>
       ))}
-      <p className="fine">Demo unlock, no real charge yet. Payments slot in here.</p>
+      {open && <p className="fine">Demo unlock, no real charge yet. Payments slot in here.</p>}
+    </div>
+  );
+}
+
+function DuelRound({ state, me, isHost }) {
+  const submitted = state.submittedIds.includes(me);
+  const pair = state.pair || [];
+  const players = state.players.filter((p) => p.connected);
+  const done = state.submittedIds.length;
+
+  if (submitted) {
+    return (
+      <div className="screen center">
+        <Logo small />
+        <p className="locked">Locked in 🔒</p>
+        <p className="muted">{done} / {players.length} voted</p>
+        {isHost && done < players.length && (
+          <button className="btn ghost" onClick={() => socket.emit('revealNow')}>Skip stragglers → reveal</button>
+        )}
+      </div>
+    );
+  }
+
+  return (
+    <div className="screen">
+      <div className="round-head"><span className="round-n">Round {state.round}</span><span className="wild">⚔️ DUEL</span></div>
+      <h2 className="prompt">{state.prompt}</h2>
+      <p className="label">Tap who's more likely:</p>
+      <div className="duel">
+        {pair.map((p) => (
+          <button key={p.id} className="duel-pick" onClick={() => socket.emit('submit', { voteFor: p.id, predict: p.id })}>
+            {p.name}{p.id === me ? ' (you)' : ''}
+          </button>
+        ))}
+      </div>
+      <p className="muted center">{done} / {players.length} voted</p>
+    </div>
+  );
+}
+
+function DuelReveal({ state, me, isHost }) {
+  const r = state.reveal;
+  const youDrink = (r.results.find((x) => x.id === me)?.sips || 0) > 0;
+  const maxVotes = Math.max(1, ...r.pair.map((p) => p.votes));
+
+  return (
+    <div className="screen">
+      <div className="round-head"><span className="round-n">Round {r.round}</span><span className="wild">⚔️ DUEL</span></div>
+      <p className="prompt sm">{r.prompt}</p>
+
+      <div className="hotseat-card">
+        <p className="muted">{r.tie ? "It's a tie" : 'More likely'}</p>
+        <div className="hotseat-name">{(r.tie ? r.drinkers.join(' & ') : r.targetName)} 🔥</div>
+      </div>
+
+      <div className="bars">
+        {r.pair.map((p, i) => (
+          <div key={i} className="bar-row">
+            <span className="bar-name">{p.name}</span>
+            <div className="bar-track"><div className="bar-fill" style={{ '--w': p.votes / maxVotes, '--i': i }} /></div>
+            <span className="bar-votes">{p.votes}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className={'verdict ' + (youDrink ? 'drink' : 'safe')}>
+        {youDrink ? (<><strong>You got picked.</strong><p>{r.challenge}</p></>) : (<><strong>Safe.</strong><p>Not you this time.</p></>)}
+      </div>
+
+      {isHost ? (
+        <div className="row">
+          <button className="btn ghost" onClick={() => socket.emit('end')}>End game</button>
+          <button className="btn primary" onClick={() => socket.emit('next')}>Next round →</button>
+        </div>
+      ) : (
+        <p className="muted center">Waiting for the host…</p>
+      )}
     </div>
   );
 }

@@ -102,29 +102,48 @@ body {
 .seg[data-active="start"] .seg-btn:nth-of-type(1),
 .seg[data-active="join"] .seg-btn:nth-of-type(2) { color: var(--black); }
 
-.modes { display: grid; gap: 10px; }
+/* Compact 2-column mode tiles — less scrolling with 5 modes. */
+.modes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .mode {
-  text-align: left; background: var(--card); border: 2px solid var(--line); color: var(--cream);
-  padding: 14px 16px; border-radius: 14px; display: flex; align-items: center; justify-content: space-between;
-  gap: 12px; font: inherit; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  position: relative; text-align: left; background: var(--card); border: 2px solid var(--line); color: var(--cream);
+  padding: 12px 14px; border-radius: 14px; display: flex; flex-direction: column; gap: 2px;
+  font: inherit; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
 }
-.mode-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-.mode strong { font-size: 18px; letter-spacing: -0.01em; }
-.mode-txt span { color: var(--muted); font-size: 13px; font-weight: 500; }
+.mode-txt { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding-right: 22px; }
+.mode strong { font-size: 16px; letter-spacing: -0.01em; }
+.mode-txt span { color: var(--muted); font-size: 12px; font-weight: 500; }
 .mode.on { border-color: var(--red); background: #1e1513; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 8px 22px rgba(232, 53, 43, 0.16); }
-/* Crafted selection check — scales in with a subtle overshoot. */
+/* Crafted selection check in the corner — scales in with a subtle overshoot. */
 .mode-check {
-  flex: none; width: 24px; height: 24px; border-radius: 50%; border: 2px solid var(--line);
-  position: relative; transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
+  position: absolute; top: 11px; right: 11px; width: 20px; height: 20px; border-radius: 50%;
+  border: 2px solid var(--line); transition: background 0.25s var(--ease), border-color 0.25s var(--ease);
 }
 .mode-check::after {
-  content: ''; position: absolute; left: 7px; top: 3px; width: 5px; height: 10px;
+  content: ''; position: absolute; left: 5px; top: 1px; width: 5px; height: 10px;
   border: solid var(--cream); border-width: 0 2px 2px 0;
   transform: rotate(45deg) scale(0); transform-origin: center;
   transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 .mode.on .mode-check { background: var(--red); border-color: var(--red); }
 .mode.on .mode-check::after { transform: rotate(45deg) scale(1); }
+
+/* Duel: two big face-off cards. */
+.duel { display: grid; gap: 12px; }
+.duel-pick {
+  background: var(--card); border: 2px solid var(--line); color: var(--cream);
+  font-family: Anton, sans-serif; font-size: 28px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 26px 16px; border-radius: 16px; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  transition: transform 0.08s ease, border-color 0.15s ease;
+}
+.duel-pick:active { transform: scale(0.97); border-color: var(--red); }
+
+/* Collapsible packs toggle in the lobby. */
+.packs-toggle {
+  display: flex; align-items: center; justify-content: space-between; width: 100%;
+  background: var(--card); border: 2px solid var(--line); color: var(--cream);
+  font: inherit; font-weight: 700; padding: 13px 16px; border-radius: 12px;
+}
+.packs-toggle .chev { color: var(--muted); }
 
 /* --- Buttons --- */
 .btn {
