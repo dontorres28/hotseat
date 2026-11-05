@@ -203,6 +203,13 @@ function room4(mode = 'chill') {
   assert.equal(game.roomFull(r), true, '5 of 5 is full');
 }
 
+// Duel caps at 4 automatically.
+{
+  const r = game.createRoom('duel');
+  assert.equal(r.maxPlayers, 4, 'duel room defaults to max 4');
+  assert.equal(game.setMax(r, 20), 4, 'duel max cannot exceed 4');
+}
+
 // Duel mode: two face off, the more-voted one drinks; non-pair voters are safe.
 {
   const { r, a, b, c, d } = room4('duel');

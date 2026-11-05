@@ -169,6 +169,7 @@ function Lobby({ state, me, isHost, leave }) {
   const connected = state.players.filter((p) => p.connected).length;
   const enough = connected >= 2;
   const max = state.maxPlayers ?? 20;
+  const ceiling = state.duel ? 4 : 20;
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
@@ -202,7 +203,7 @@ function Lobby({ state, me, isHost, leave }) {
           <div className="stepper">
             <button onClick={() => socket.emit('setMax', { max: max - 1 })} disabled={max <= Math.max(2, connected)}>−</button>
             <span>max {max}</span>
-            <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= 20}>+</button>
+            <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= ceiling}>+</button>
           </div>
         )}
       </div>

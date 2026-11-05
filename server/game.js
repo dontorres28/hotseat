@@ -41,7 +41,7 @@ export function createRoom(mode) {
     players: new Map(), // id -> player
     deck: shuffled(promptsForMode(mode)),
     deckIndex: 0,
-    maxPlayers: 20, // host-adjustable cap (default = ceiling)
+    maxPlayers: mode === 'duel' ? 4 : 20, // duel is a 2-4 mode; everything else opens to 20
     enabledPacks: new Set(), // packs switched on for this room
     prompt: null,
     wildcard: null,
@@ -137,8 +137,9 @@ export function roomFull(room) {
 }
 // Host sets the cap; it can't go below who's already here, or outside [2, 20].
 export function setMax(room, n) {
+  const ceiling = room.mode === 'duel' ? 4 : MAX_MAX; // duel caps at 4
   const floor = Math.max(MIN_MAX, connectedCount(room));
-  room.maxPlayers = Math.min(MAX_MAX, Math.max(floor, Math.floor(Number(n)) || floor));
+  room.maxPlayers = Math.min(ceiling, Math.max(floor, Math.floor(Number(n)) || floor));
   return room.maxPlayers;
 }
 
