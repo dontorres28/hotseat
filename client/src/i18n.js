@@ -1,0 +1,105 @@
+import { createContext, useContext } from 'react';
+
+// All UI chrome. Game content (prompts, challenges, dares, packs, awards, wildcard
+// labels) is translated server-side and arrives already in the room's language.
+export const LANGS = [
+  { id: 'en', label: 'English', flag: '🇬🇧' },
+  { id: 'de', label: 'Deutsch', flag: '🇩🇪' },
+];
+
+const S = {
+  en: {
+    tagline: "Don't answer. Predict your friends.",
+    startRoom: 'Start a room', join: 'Join', yourName: 'Your name',
+    createRoom: 'Create room', joinRoom: 'Join room', code: 'CODE',
+    fine18: "18+. Know your limit. There's always a non-drinking challenge, never required to drink.",
+    'mode.chill.name': 'Chill', 'mode.chill.blurb': 'Clean and silly.',
+    'mode.roast.name': 'Roast', 'mode.roast.blurb': 'Savage but friendly.',
+    'mode.spicy.name': 'Spicy', 'mode.spicy.blurb': 'After dark. Opt-in.',
+    'mode.chaos.name': 'Chaos', 'mode.chaos.blurb': 'Mixed + wildcards.',
+    'mode.duel.name': 'Duel', 'mode.duel.blurb': 'Face-off. 2 to 4.',
+    'err.name': 'Enter your name first.', 'err.code': 'Room codes are 4 letters.',
+    'err.busy': 'Server is busy right now. Try again in a moment.',
+    'err.no_room': "That room code doesn't exist.", 'err.started': 'That game already started.',
+    'err.full': 'That room is full.', 'err.generic': 'Something broke.', 'err.join': 'Could not join.',
+    roomCode: 'Room code', tapShare: '{mode} mode, tap to share', copied: '✅ Invite link copied',
+    leave: 'Leave', players: '{n} / {max} players', maxLabel: 'max {n}',
+    packs: '🎒 Prompt packs', packsOn: ' · {n} on', packsHint: 'Mix in as many packs as you like.',
+    on: 'On', off: 'Off', spicyConsent: "This gets spicy, I'm in 🌶️",
+    need2: 'Need 2+ players', waitingOptIn: 'Waiting on {n} to opt in', startGame: 'Start game',
+    waitingHost: 'Waiting for the host to start…',
+    round: 'Round {n}', wildcard: 'WILDCARD', whoFits: 'Who fits?', notYou: '(not you)',
+    whoGroup: 'Who will the group pick?', lockIn: 'Lock it in', lockedIn: 'Locked in 🔒',
+    answered: '{done} / {total} answered', skip: 'Skip stragglers → reveal',
+    tapMoreLikely: "Tap who's more likely:", duel: 'DUEL', voted: '{done} / {total} voted',
+    hotSeat: 'In the hot seat', moreLikely: 'More likely', tie: "It's a tie",
+    youHotSeat: "You're in the hot seat.", misread: 'You misread the room.',
+    takeSip: 'Take a sip.', takeTwo: 'Take two sips.', safe: 'Safe.', readRight: 'You read the room right.',
+    swap: 'Not drinking? Swap for a dare', dareInstead: 'Dare instead: {dare}',
+    gotPicked: 'You got picked.', notYouTime: 'Not you this time.',
+    traitorBanner: "😈 You're the TRAITOR. Vote against the crowd. Don't pick who you think lands in the hot seat. Pull it off for a reward.",
+    traitorWon: '😈 {name} was the Traitor, and got away with it.',
+    traitorBusted: '😈 {name} was the Traitor, and voted with the crowd. Busted.',
+    exposedHead: '🃏 THE EXPOSED CARD', exposedSub: 'Who voted for whom this round:',
+    earnedToken: '🎟️ You took the most heat. You earned a revenge token.',
+    spendToken: '🎟️ Spend revenge token ({n})', handChallenge: 'Hand a challenge to…', cancel: 'Cancel',
+    toastRevenge: '🎟️ {from} spent a revenge token on {to}',
+    endGame: 'End game', nextRound: 'Next round →', waitingHostShort: 'Waiting for the host…',
+    damage: "{rounds} rounds. Here's the damage.", colPlayer: 'Player', colReads: 'Reads',
+    newGame: 'New game', screenshot: 'Screenshot it. Settle it later.', loading: 'loading…',
+    language: 'Language', nobody: 'nobody',
+  },
+  de: {
+    tagline: 'Nicht antworten. Sag deine Freunde voraus.',
+    startRoom: 'Raum starten', join: 'Beitreten', yourName: 'Dein Name',
+    createRoom: 'Raum erstellen', joinRoom: 'Raum beitreten', code: 'CODE',
+    fine18: 'Ab 18. Kenn deine Grenzen. Es gibt immer eine alkoholfreie Aufgabe, du musst nie trinken.',
+    'mode.chill.name': 'Chill', 'mode.chill.blurb': 'Harmlos und albern.',
+    'mode.roast.name': 'Roast', 'mode.roast.blurb': 'Fies, aber freundlich.',
+    'mode.spicy.name': 'Heiß', 'mode.spicy.blurb': 'Für später. Nur mit Zustimmung.',
+    'mode.chaos.name': 'Chaos', 'mode.chaos.blurb': 'Gemischt + Jokerrunden.',
+    'mode.duel.name': 'Duell', 'mode.duel.blurb': 'Duell. 2 bis 4.',
+    'err.name': 'Gib zuerst deinen Namen ein.', 'err.code': 'Raumcodes haben 4 Zeichen.',
+    'err.busy': 'Der Server ist gerade ausgelastet. Versuch es gleich noch mal.',
+    'err.no_room': 'Diesen Raumcode gibt es nicht.', 'err.started': 'Dieses Spiel hat schon begonnen.',
+    'err.full': 'Dieser Raum ist voll.', 'err.generic': 'Da ist was schiefgelaufen.', 'err.join': 'Beitritt nicht möglich.',
+    roomCode: 'Raumcode', tapShare: '{mode}-Modus, zum Teilen tippen', copied: '✅ Einladungslink kopiert',
+    leave: 'Verlassen', players: '{n} / {max} Spieler', maxLabel: 'max. {n}',
+    packs: '🎒 Fragen-Packs', packsOn: ' · {n} an', packsHint: 'Misch so viele Packs rein, wie du willst.',
+    on: 'An', off: 'Aus', spicyConsent: 'Wird heiß, ich bin dabei 🌶️',
+    need2: 'Mindestens 2 Spieler nötig', waitingOptIn: 'Warte auf {n}, die noch zustimmen müssen', startGame: 'Spiel starten',
+    waitingHost: 'Warte, bis der Host startet…',
+    round: 'Runde {n}', wildcard: 'JOKER', whoFits: 'Wer passt?', notYou: '(nicht du)',
+    whoGroup: 'Wen wählt die Gruppe?', lockIn: 'Festlegen', lockedIn: 'Festgelegt 🔒',
+    answered: '{done} / {total} geantwortet', skip: 'Nachzügler überspringen → Auflösung',
+    tapMoreLikely: 'Tippe, wer eher:', duel: 'DUELL', voted: '{done} / {total} abgestimmt',
+    hotSeat: 'Auf dem heißen Stuhl', moreLikely: 'Eher', tie: 'Unentschieden',
+    youHotSeat: 'Du sitzt auf dem heißen Stuhl.', misread: 'Du hast den Raum falsch eingeschätzt.',
+    takeSip: 'Nimm einen Schluck.', takeTwo: 'Nimm zwei Schlucke.', safe: 'Sicher.', readRight: 'Du hast den Raum richtig gelesen.',
+    swap: 'Trinkst du nicht? Tausch gegen eine Mutprobe', dareInstead: 'Mutprobe stattdessen: {dare}',
+    gotPicked: 'Du wurdest gewählt.', notYouTime: 'Diesmal nicht du.',
+    traitorBanner: '😈 Du bist der VERRÄTER. Stimm gegen die Mehrheit. Wähl nicht den, der deiner Meinung nach auf dem heißen Stuhl landet. Schaffst du es, gibt es eine Belohnung.',
+    traitorWon: '😈 {name} war der Verräter und ist damit durchgekommen.',
+    traitorBusted: '😈 {name} war der Verräter und hat mit der Mehrheit gestimmt. Erwischt.',
+    exposedHead: '🃏 DIE ENTHÜLLUNGSKARTE', exposedSub: 'Wer diese Runde für wen gestimmt hat:',
+    earnedToken: '🎟️ Du hast am meisten abbekommen. Du hast einen Rache-Token verdient.',
+    spendToken: '🎟️ Rache-Token einsetzen ({n})', handChallenge: 'Gib eine Aufgabe an…', cancel: 'Abbrechen',
+    toastRevenge: '🎟️ {from} hat einen Rache-Token gegen {to} eingesetzt',
+    endGame: 'Spiel beenden', nextRound: 'Nächste Runde →', waitingHostShort: 'Warte auf den Host…',
+    damage: '{rounds} Runden. Hier ist die Bilanz.', colPlayer: 'Spieler', colReads: 'Treffer',
+    newGame: 'Neues Spiel', screenshot: 'Mach einen Screenshot. Klärt es später.', loading: 'lädt…',
+    language: 'Sprache', nobody: 'niemand',
+  },
+};
+
+export function t(lang, key, vars) {
+  let s = (S[lang] && S[lang][key]) ?? S.en[key] ?? key;
+  if (vars) for (const k in vars) s = s.replaceAll(`{${k}}`, vars[k]);
+  return s;
+}
+
+export const LangCtx = createContext('en');
+export function useT() {
+  const lang = useContext(LangCtx);
+  return (key, vars) => t(lang, key, vars);
+}

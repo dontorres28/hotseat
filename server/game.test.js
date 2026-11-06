@@ -2,6 +2,25 @@
 import assert from 'node:assert';
 import * as game from './game.js';
 import { CHALLENGES, challengeMinPlayers } from './content.js';
+import EN from './content/en.js';
+import DE from './content/de.js';
+
+// Language files must stay index-aligned, and a translated room must resolve.
+{
+  assert.equal(EN.challenges.length, DE.challenges.length, 'challenge counts aligned');
+  assert.equal(EN.dares.length, DE.dares.length, 'dare counts aligned');
+  assert.equal(EN.wildcards.length, DE.wildcards.length, 'wildcard counts aligned');
+  for (const m of ['chill', 'roast', 'spicy']) {
+    assert.equal(EN.prompts[m].length, DE.prompts[m].length, `prompt count aligned: ${m}`);
+  }
+  for (const id of Object.keys(EN.packs)) {
+    assert.ok(DE.packs[id], `de has pack ${id}`);
+    assert.equal(EN.packs[id].prompts.length, DE.packs[id].prompts.length, `pack prompts aligned: ${id}`);
+  }
+  const r = game.createRoom('chill', 'de');
+  game.buildDeck(r);
+  assert.ok(r.deck.length > 0 && r.deck[0] !== EN.prompts.chill[0], 'german room resolves german prompts');
+}
 
 // Challenge fit: crowd challenges need 3+, and a 2-player game never draws one.
 {

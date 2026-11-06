@@ -1,28 +1,30 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { socket } from './socket.js';
+import { LangCtx, useT, LANGS } from './i18n.js';
 
 const MODES = [
-  { id: 'chill', name: 'Chill', emoji: '😎', blurb: 'Clean and silly.' },
-  { id: 'roast', name: 'Roast', emoji: '🔥', blurb: 'Savage but friendly.' },
-  { id: 'spicy', name: 'Spicy', emoji: '🌶️', blurb: 'After dark. Opt-in.' },
-  { id: 'chaos', name: 'Chaos', emoji: '🎲', blurb: 'Mixed + wildcards.' },
-  { id: 'duel', name: 'Duel', emoji: '⚔️', blurb: 'Face-off. 2 to 4.' },
+  { id: 'chill', emoji: '😎' },
+  { id: 'roast', emoji: '🔥' },
+  { id: 'spicy', emoji: '🌶️' },
+  { id: 'chaos', emoji: '🎲' },
+  { id: 'duel', emoji: '⚔️' },
 ];
 
 const LS = 'hotseat.session';
+const LS_LANG = 'hotseat.lang';
 
 export default function App() {
   const [me, setMe] = useState(null);
-  const [code, setCode] = useState(null);
   const [state, setState] = useState(null);
   const [recap, setRecap] = useState(null);
   const [error, setError] = useState('');
   const [secret, setSecret] = useState(null); // 'traitor' | 'crew' | null
   const [toast, setToast] = useState(null);
+  const [lang, setLang] = useState(() => { try { return localStorage.getItem(LS_LANG) || 'en'; } catch { return 'en'; } });
 
   useEffect(() => {
     socket.on('joined', ({ code, playerId }) => {
-      setMe(playerId); setCode(code); setRecap(null);
+      setMe(playerId); setRecap(null);
       localStorage.setItem(LS, JSON.stringify({ code, playerId }));
     });
     socket.on('state', (s) => {
@@ -33,7 +35,6 @@ export default function App() {
     socket.on('recap', (r) => setRecap(r));
     socket.on('secret', ({ role }) => setSecret(role));
     socket.on('revenge', (r) => { setToast(r); setTimeout(() => setToast(null), 4500); });
-    // Try to resume a refreshed session.
     const resume = () => {
       try {
         const saved = JSON.parse(localStorage.getItem(LS) || 'null');
@@ -45,92 +46,111 @@ export default function App() {
     return () => socket.off();
   }, []);
 
+  const pickLang = (l) => { setLang(l); try { localStorage.setItem(LS_LANG, l); } catch { /* ignore */ } };
   const leave = () => {
     socket.emit('leaveRoom');
     localStorage.removeItem(LS);
-    setMe(null); setCode(null); setState(null); setRecap(null); setSecret(null);
+    setMe(null); setState(null); setRecap(null); setSecret(null);
   };
 
-  if (!state || !me) return <Home setError={setError} error={error} />;
+  // The room's language wins once you're in one; otherwise your local pick.
+  const activeLang = state?.lang || lang;
 
-  const isHost = state.hostId === me;
-  let screen;
-  if (recap) screen = <Recap recap={recap} leave={leave} isHost={isHost} />;
-  else if (state.phase === 'lobby') screen = <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
-  else if (state.phase === 'prompt') screen = state.duel
-    ? <DuelRound state={state} me={me} isHost={isHost} />
-    : <Round state={state} me={me} isHost={isHost} secret={secret} />;
-  else if (state.phase === 'reveal') screen = state.reveal?.duel
-    ? <DuelReveal state={state} me={me} isHost={isHost} />
-    : <Reveal state={state} me={me} isHost={isHost} />;
-  else screen = <Wordmark sub="loading…" />;
+  let content;
+  if (!state || !me) {
+    content = <Home setError={setError} error={error} lang={lang} setLang={pickLang} />;
+  } else {
+    const isHost = state.hostId === me;
+    let screen;
+    if (recap) screen = <Recap recap={recap} leave={leave} />;
+    else if (state.phase === 'lobby') screen = <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
+    else if (state.phase === 'prompt') screen = state.duel
+      ? <DuelRound state={state} me={me} isHost={isHost} />
+      : <Round state={state} me={me} isHost={isHost} secret={secret} />;
+    else if (state.phase === 'reveal') screen = state.reveal?.duel
+      ? <DuelReveal state={state} me={me} isHost={isHost} />
+      : <Reveal state={state} me={me} isHost={isHost} />;
+    else screen = <Wordmark />;
+    const inGame = !recap && (state.phase === 'prompt' || state.phase === 'reveal');
+    content = <>{screen}{toast && <Toast t={toast} />}{inGame && <LeaveFloat leave={leave} />}</>;
+  }
 
-  const inGame = !recap && (state.phase === 'prompt' || state.phase === 'reveal');
-  return <>{screen}{toast && <Toast t={toast} />}{inGame && <button className="leave-float" onClick={leave}>Leave</button>}</>;
+  return <LangCtx.Provider value={activeLang}>{content}</LangCtx.Provider>;
+}
+
+function LeaveFloat({ leave }) {
+  const T = useT();
+  return <button className="leave-float" onClick={leave}>{T('leave')}</button>;
 }
 
 // Shown when you're told to drink — swap the sip for a non-drinking dare.
 function DareSwap() {
+  const T = useT();
   const [dare, setDare] = useState(null);
-  if (dare) return <p className="dare">🎯 Dare instead: {dare}</p>;
+  if (dare) return <p className="dare">🎯 {T('dareInstead', { dare })}</p>;
   return (
     <button className="swap-btn" onClick={() => socket.emit('swapDare', {}, (d) => setDare(d))}>
-      Not drinking? Swap for a dare
+      {T('swap')}
     </button>
   );
 }
 
 function Toast({ t }) {
+  const T = useT();
   return (
     <div className="toast">
-      <strong>🎟️ {t.fromName} spent a revenge token on {t.toName}</strong>
+      <strong>{T('toastRevenge', { from: t.fromName, to: t.toName })}</strong>
       <span>{t.challenge}</span>
     </div>
   );
 }
 
-function Wordmark({ sub }) {
-  return (
-    <div className="screen center">
-      <Logo />
-      {sub && <p className="muted">{sub}</p>}
-    </div>
-  );
+function Wordmark() {
+  const T = useT();
+  return <div className="screen center"><Logo /><p className="muted">{T('loading')}</p></div>;
 }
 
 function Logo({ small }) {
   return <img className={small ? 'logo logo-sm' : 'logo'} src="/logo.webp" alt="HOT SEAT" />;
 }
 
-function Home({ setError, error }) {
+function Home({ setError, error, lang, setLang }) {
+  const T = useT();
   const invited = new URLSearchParams(window.location.search).get('c');
-  const [tab, setTab] = useState(invited ? 'join' : 'start'); // start | join
+  const [tab, setTab] = useState(invited ? 'join' : 'start');
   const [name, setName] = useState('');
   const [mode, setMode] = useState('chill');
   const [joinCode, setJoinCode] = useState((invited || '').toUpperCase().slice(0, 4));
 
   const create = () => {
-    if (!name.trim()) return setError('Enter your name first.');
-    socket.emit('createRoom', { name, mode }, (res) => { if (!res?.ok) setError(res?.error || 'Something broke.'); });
+    if (!name.trim()) return setError('name');
+    socket.emit('createRoom', { name, mode, lang }, (res) => { if (!res?.ok) setError(res?.error || 'generic'); });
   };
   const join = () => {
-    if (!name.trim()) return setError('Enter your name first.');
-    if (joinCode.trim().length < 4) return setError('Room codes are 4 letters.');
-    socket.emit('joinRoom', { code: joinCode, name }, (res) => { if (!res?.ok) setError(res?.error || 'Could not join.'); });
+    if (!name.trim()) return setError('name');
+    if (joinCode.trim().length < 4) return setError('code');
+    socket.emit('joinRoom', { code: joinCode, name }, (res) => { if (!res?.ok) setError(res?.error || 'join'); });
   };
 
   return (
     <div className="screen">
-      <div className="center" style={{ marginTop: 24 }}><Logo /></div>
-      <p className="tagline">Don't answer. Predict your friends.</p>
+      <div className="lang-row">
+        {LANGS.map((l) => (
+          <button key={l.id} className={'lang-btn' + (lang === l.id ? ' on' : '')} onClick={() => setLang(l.id)}>
+            {l.flag} {l.label}
+          </button>
+        ))}
+      </div>
+      <div className="center"><Logo /></div>
+      <p className="tagline">{T('tagline')}</p>
 
       <div className="seg" data-active={tab}>
         <span className="seg-ind" aria-hidden="true" />
-        <button className="seg-btn" onClick={() => setTab('start')}>Start a room</button>
-        <button className="seg-btn" onClick={() => setTab('join')}>Join</button>
+        <button className="seg-btn" onClick={() => setTab('start')}>{T('startRoom')}</button>
+        <button className="seg-btn" onClick={() => setTab('join')}>{T('join')}</button>
       </div>
 
-      <input className="field" placeholder="Your name" maxLength={20} value={name}
+      <input className="field" placeholder={T('yourName')} maxLength={20} value={name}
         onChange={(e) => { setName(e.target.value); setError(''); }} />
 
       <div key={tab} className="tab-body">
@@ -139,29 +159,33 @@ function Home({ setError, error }) {
             <div className="modes">
               {MODES.map((m, i) => (
                 <button key={m.id} style={{ '--i': i }} className={mode === m.id ? 'mode on' : 'mode'} onClick={() => setMode(m.id)}>
-                  <span className="mode-txt"><strong>{m.emoji} {m.name}</strong><span>{m.blurb}</span></span>
+                  <span className="mode-txt">
+                    <strong>{m.emoji} {T('mode.' + m.id + '.name')}</strong>
+                    <span>{T('mode.' + m.id + '.blurb')}</span>
+                  </span>
                   <span className="mode-check" aria-hidden="true" />
                 </button>
               ))}
             </div>
-            <button className="btn primary" onClick={create}>Create room</button>
+            <button className="btn primary" onClick={create}>{T('createRoom')}</button>
           </>
         ) : (
           <>
-            <input className="field code-in" placeholder="CODE" maxLength={4} value={joinCode}
+            <input className="field code-in" placeholder={T('code')} maxLength={4} value={joinCode}
               onChange={(e) => { setJoinCode(e.target.value.toUpperCase()); setError(''); }} />
-            <button className="btn primary" onClick={join}>Join room</button>
+            <button className="btn primary" onClick={join}>{T('joinRoom')}</button>
           </>
         )}
       </div>
 
-      {error && <p className="error">{error}</p>}
-      <p className="fine">18+. Know your limit. There's always a non-drinking challenge, never required to drink.</p>
+      {error && <p className="error">{T('err.' + error)}</p>}
+      <p className="fine">{T('fine18')}</p>
     </div>
   );
 }
 
 function Lobby({ state, me, isHost, leave }) {
+  const T = useT();
   const [copied, setCopied] = useState(false);
   const you = state.players.find((p) => p.id === me);
   const needMyConsent = state.needsConsent && you && !you.consented;
@@ -173,20 +197,22 @@ function Lobby({ state, me, isHost, leave }) {
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
-    const data = { title: 'HOT SEAT', text: `Join my HOT SEAT room, code ${state.code}`, url };
+    const data = { title: 'HOT SEAT', text: `HOT SEAT — ${state.code}`, url };
     try {
       if (navigator.share) await navigator.share(data);
       else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
-    } catch { /* user dismissed share sheet */ }
+    } catch { /* dismissed */ }
   };
 
   return (
     <div className="screen">
       <TopBar leave={leave} />
       <div className="center">
-        <p className="muted">Room code</p>
+        <p className="muted">{T('roomCode')}</p>
         <button className="bigcode" onClick={share}>{state.code}</button>
-        <p className="muted share-hint">{copied ? '✅ Invite link copied' : `${state.mode.toUpperCase()} mode, tap to share`}</p>
+        <p className="muted share-hint">
+          {copied ? T('copied') : T('tapShare', { mode: T('mode.' + state.mode + '.name').toUpperCase() })}
+        </p>
       </div>
 
       <div className="players">
@@ -198,11 +224,11 @@ function Lobby({ state, me, isHost, leave }) {
       </div>
 
       <div className="maxrow">
-        <span className="muted">{connected} / {max} players</span>
+        <span className="muted">{T('players', { n: connected, max })}</span>
         {isHost && (
           <div className="stepper">
             <button onClick={() => socket.emit('setMax', { max: max - 1 })} disabled={max <= Math.max(2, connected)}>−</button>
-            <span>max {max}</span>
+            <span>{T('maxLabel', { n: max })}</span>
             <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= ceiling}>+</button>
           </div>
         )}
@@ -211,28 +237,28 @@ function Lobby({ state, me, isHost, leave }) {
       <Packs packs={state.packs || []} isHost={isHost} />
 
       {needMyConsent && (
-        <button className="btn primary" onClick={() => socket.emit('consent')}>This gets spicy, I'm in 🌶️</button>
+        <button className="btn primary" onClick={() => socket.emit('consent')}>{T('spicyConsent')}</button>
       )}
 
       {isHost ? (
-        <button className="btn primary" disabled={!enough || waiting > 0}
-          onClick={() => socket.emit('start')}>
-          {!enough ? 'Need 2+ players' : waiting > 0 ? `Waiting on ${waiting} to opt in` : 'Start game'}
+        <button className="btn primary" disabled={!enough || waiting > 0} onClick={() => socket.emit('start')}>
+          {!enough ? T('need2') : waiting > 0 ? T('waitingOptIn', { n: waiting }) : T('startGame')}
         </button>
       ) : (
-        <p className="muted center">Waiting for the host to start…</p>
+        <p className="muted center">{T('waitingHost')}</p>
       )}
     </div>
   );
 }
 
 function Packs({ packs, isHost }) {
+  const T = useT();
   const [open, setOpen] = useState(false);
   const enabled = packs.filter((p) => p.enabled);
   if (!isHost) {
     return enabled.length ? (
       <div className="packs-ro">
-        <span className="muted">Packs:</span>
+        <span className="muted">{T('packs')}</span>
         {enabled.map((p) => <span key={p.id} className="chip">{p.emoji} {p.name}</span>)}
       </div>
     ) : null;
@@ -240,7 +266,7 @@ function Packs({ packs, isHost }) {
   return (
     <div className="packs">
       <button className="packs-toggle" onClick={() => setOpen((o) => !o)}>
-        <span>🎒 Prompt packs{enabled.length ? ` · ${enabled.length} on` : ''}</span>
+        <span>{T('packs')}{enabled.length ? T('packsOn', { n: enabled.length }) : ''}</span>
         <span className="chev">{open ? '▾' : '▸'}</span>
       </button>
       {open && packs.map((p, i) => (
@@ -250,15 +276,16 @@ function Packs({ packs, isHost }) {
             <strong>{p.emoji} {p.name}</strong>
             <span className="muted">{p.blurb}</span>
           </div>
-          <span className={'pack-btn' + (p.enabled ? ' on' : '')}>{p.enabled ? 'On' : 'Off'}</span>
+          <span className={'pack-btn' + (p.enabled ? ' on' : '')}>{p.enabled ? T('on') : T('off')}</span>
         </button>
       ))}
-      {open && <p className="fine">Mix in as many packs as you like.</p>}
+      {open && <p className="fine">{T('packsHint')}</p>}
     </div>
   );
 }
 
 function DuelRound({ state, me, isHost }) {
+  const T = useT();
   const submitted = state.submittedIds.includes(me);
   const pair = state.pair || [];
   const players = state.players.filter((p) => p.connected);
@@ -268,10 +295,10 @@ function DuelRound({ state, me, isHost }) {
     return (
       <div className="screen center">
         <Logo small />
-        <p className="locked">Locked in 🔒</p>
-        <p className="muted">{done} / {players.length} voted</p>
+        <p className="locked">{T('lockedIn')}</p>
+        <p className="muted">{T('voted', { done, total: players.length })}</p>
         {isHost && done < players.length && (
-          <button className="btn ghost" onClick={() => socket.emit('revealNow')}>Skip stragglers → reveal</button>
+          <button className="btn ghost" onClick={() => socket.emit('revealNow')}>{T('skip')}</button>
         )}
       </div>
     );
@@ -279,33 +306,34 @@ function DuelRound({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">Round {state.round}</span><span className="wild">⚔️ DUEL</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: state.round })}</span><span className="wild">⚔️ {T('duel')}</span></div>
       <h2 className="prompt">{state.prompt}</h2>
-      <p className="label">Tap who's more likely:</p>
+      <p className="label">{T('tapMoreLikely')}</p>
       <div className="duel">
         {pair.map((p) => (
           <button key={p.id} className="duel-pick" onClick={() => socket.emit('submit', { voteFor: p.id, predict: p.id })}>
-            {p.name}{p.id === me ? ' (you)' : ''}
+            {p.name}{p.id === me ? ` ${T('notYou')}` : ''}
           </button>
         ))}
       </div>
-      <p className="muted center">{done} / {players.length} voted</p>
+      <p className="muted center">{T('voted', { done, total: players.length })}</p>
     </div>
   );
 }
 
 function DuelReveal({ state, me, isHost }) {
+  const T = useT();
   const r = state.reveal;
   const youDrink = (r.results.find((x) => x.id === me)?.sips || 0) > 0;
   const maxVotes = Math.max(1, ...r.pair.map((p) => p.votes));
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">Round {r.round}</span><span className="wild">⚔️ DUEL</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: r.round })}</span><span className="wild">⚔️ {T('duel')}</span></div>
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
-        <p className="muted">{r.tie ? "It's a tie" : 'More likely'}</p>
+        <p className="muted">{r.tie ? T('tie') : T('moreLikely')}</p>
         <div className="hotseat-name">{(r.tie ? r.drinkers.join(' & ') : r.targetName)} 🔥</div>
       </div>
 
@@ -320,23 +348,24 @@ function DuelReveal({ state, me, isHost }) {
       </div>
 
       <div className={'verdict ' + (youDrink ? 'drink' : 'safe')}>
-        {youDrink ? (<><strong>You got picked.</strong><p>{r.challenge}</p></>) : (<><strong>Safe.</strong><p>Not you this time.</p></>)}
+        {youDrink ? (<><strong>{T('gotPicked')}</strong><p>{r.challenge}</p></>) : (<><strong>{T('safe')}</strong><p>{T('notYouTime')}</p></>)}
         {youDrink && <DareSwap />}
       </div>
 
       {isHost ? (
         <div className="row">
-          <button className="btn ghost" onClick={() => socket.emit('end')}>End game</button>
-          <button className="btn primary" onClick={() => socket.emit('next')}>Next round →</button>
+          <button className="btn ghost" onClick={() => socket.emit('end')}>{T('endGame')}</button>
+          <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>
         </div>
       ) : (
-        <p className="muted center">Waiting for the host…</p>
+        <p className="muted center">{T('waitingHostShort')}</p>
       )}
     </div>
   );
 }
 
 function Round({ state, me, isHost, secret }) {
+  const T = useT();
   const [vote, setVote] = useState(null);
   const [predict, setPredict] = useState(null);
   const submitted = state.submittedIds.includes(me);
@@ -350,10 +379,10 @@ function Round({ state, me, isHost, secret }) {
     return (
       <div className="screen center">
         <Logo small />
-        <p className="locked">Locked in 🔒</p>
-        <p className="muted">{done} / {total} answered</p>
+        <p className="locked">{T('lockedIn')}</p>
+        <p className="muted">{T('answered', { done, total })}</p>
         {isHost && done < total && (
-          <button className="btn ghost" onClick={() => socket.emit('revealNow')}>Skip stragglers → reveal</button>
+          <button className="btn ghost" onClick={() => socket.emit('revealNow')}>{T('skip')}</button>
         )}
       </div>
     );
@@ -362,22 +391,20 @@ function Round({ state, me, isHost, secret }) {
   return (
     <div className="screen">
       <div className="round-head">
-        <span className="round-n">Round {state.round}</span>
-        {state.wildcard && <span className="wild">WILDCARD</span>}
+        <span className="round-n">{T('round', { n: state.round })}</span>
+        {state.wildcard && <span className="wild">{T('wildcard')}</span>}
       </div>
       {state.wildcard && <div className="wild-banner">⚡ {state.wildcard.label}</div>}
-      {secret === 'traitor' && (
-        <div className="traitor-banner">😈 You're the TRAITOR. Vote <em>against</em> the crowd. Don't pick who you think lands in the hot seat. Pull it off for a reward.</div>
-      )}
+      {secret === 'traitor' && <div className="traitor-banner">{T('traitorBanner')}</div>}
       <h2 className="prompt">{state.prompt}</h2>
 
-      <p className="label">Who fits? <span className="muted">(not you)</span></p>
+      <p className="label">{T('whoFits')} <span className="muted">{T('notYou')}</span></p>
       <PickGrid players={players.filter((p) => p.id !== me)} value={vote} onPick={setVote} accent="red" />
 
-      <p className="label">Who will the group pick?</p>
+      <p className="label">{T('whoGroup')}</p>
       <PickGrid players={players} value={predict} onPick={setPredict} accent="cream" />
 
-      <button className="btn primary" disabled={!vote || !predict} onClick={send}>Lock it in</button>
+      <button className="btn primary" disabled={!vote || !predict} onClick={send}>{T('lockIn')}</button>
     </div>
   );
 }
@@ -395,6 +422,7 @@ function PickGrid({ players, value, onPick, accent }) {
 }
 
 function Reveal({ state, me, isHost }) {
+  const T = useT();
   const r = state.reveal;
   const [picking, setPicking] = useState(false);
   const mine = r.results.find((x) => x.id === me);
@@ -407,11 +435,11 @@ function Reveal({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">Round {r.round}</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: r.round })}</span></div>
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
-        <p className="muted">In the hot seat</p>
+        <p className="muted">{T('hotSeat')}</p>
         <div className="hotseat-name">{r.targetName} 🔥</div>
       </div>
 
@@ -427,62 +455,63 @@ function Reveal({ state, me, isHost }) {
 
       <div className={'verdict ' + (youAreHotSeat || mine?.sips ? 'drink' : 'safe')}>
         {youAreHotSeat ? (
-          <><strong>You're in the hot seat.</strong><p>{r.challenge}</p></>
+          <><strong>{T('youHotSeat')}</strong><p>{r.challenge}</p></>
         ) : mine?.sips ? (
-          <><strong>You misread the room.</strong><p>Take {mine.sips === 2 ? 'two sips' : 'a sip'}.</p></>
+          <><strong>{T('misread')}</strong><p>{mine.sips === 2 ? T('takeTwo') : T('takeSip')}</p></>
         ) : (
-          <><strong>Safe.</strong><p>You read the room right.</p></>
+          <><strong>{T('safe')}</strong><p>{T('readRight')}</p></>
         )}
         {(youAreHotSeat || mine?.sips) && <DareSwap />}
       </div>
 
       {r.traitor && (
         <div className={'traitor-reveal ' + (r.traitor.won ? 'won' : 'caught')}>
-          😈 <strong>{r.traitor.name}</strong> was the Traitor, {r.traitor.won ? 'and got away with it.' : 'and voted with the crowd. Busted.'}
+          {T(r.traitor.won ? 'traitorWon' : 'traitorBusted', { name: r.traitor.name })}
         </div>
       )}
 
       {r.exposed && (
         <div className="exposed">
-          <div className="exposed-head">🃏 THE EXPOSED CARD</div>
-          <p className="muted">Who voted for whom this round:</p>
+          <div className="exposed-head">{T('exposedHead')}</div>
+          <p className="muted">{T('exposedSub')}</p>
           {r.exposed.map((e, i) => (
             <div key={i} className="exposed-row"><span>{e.voter}</span><span className="arrow">→</span><strong>{e.target}</strong></div>
           ))}
         </div>
       )}
 
-      {r.revengeTo === meP?.name && <p className="earned">🎟️ You took the most heat. You earned a revenge token.</p>}
+      {r.revengeTo === meP?.name && <p className="earned">{T('earnedToken')}</p>}
 
       {myTokens > 0 && (
         picking ? (
           <div className="spend">
-            <p className="label">Hand a challenge to…</p>
+            <p className="label">{T('handChallenge')}</p>
             <PickGrid players={state.players.filter((p) => p.id !== me)} value={null} onPick={spend} accent="red" />
-            <button className="btn ghost" onClick={() => setPicking(false)}>Cancel</button>
+            <button className="btn ghost" onClick={() => setPicking(false)}>{T('cancel')}</button>
           </div>
         ) : (
-          <button className="btn ghost" onClick={() => setPicking(true)}>🎟️ Spend revenge token ({myTokens})</button>
+          <button className="btn ghost" onClick={() => setPicking(true)}>{T('spendToken', { n: myTokens })}</button>
         )
       )}
 
       {isHost ? (
         <div className="row">
-          <button className="btn ghost" onClick={() => socket.emit('end')}>End game</button>
-          <button className="btn primary" onClick={() => socket.emit('next')}>Next round →</button>
+          <button className="btn ghost" onClick={() => socket.emit('end')}>{T('endGame')}</button>
+          <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>
         </div>
       ) : (
-        <p className="muted center">Waiting for the host…</p>
+        <p className="muted center">{T('waitingHostShort')}</p>
       )}
     </div>
   );
 }
 
-function Recap({ recap, leave, isHost }) {
+function Recap({ recap, leave }) {
+  const T = useT();
   return (
     <div className="screen">
       <div className="center" style={{ marginTop: 16 }}><Logo small /></div>
-      <p className="tagline">{recap.rounds} rounds. Here's the damage.</p>
+      <p className="tagline">{T('damage', { rounds: recap.rounds })}</p>
 
       <div className="awards">
         {recap.awards.map((a, i) => (
@@ -490,7 +519,7 @@ function Recap({ recap, leave, isHost }) {
             <span className="award-emoji">{a.emoji}</span>
             <div>
               <strong>{a.title}</strong>
-              <div className="award-win">{a.winners.length ? a.winners.join(', ') : 'nobody'}</div>
+              <div className="award-win">{a.winners.length ? a.winners.join(', ') : T('nobody')}</div>
               <span className="muted">{a.stat}</span>
             </div>
           </div>
@@ -498,7 +527,7 @@ function Recap({ recap, leave, isHost }) {
       </div>
 
       <table className="score">
-        <thead><tr><th>Player</th>{!recap.duel && <th>Reads</th>}<th>🔥</th><th>🍺</th></tr></thead>
+        <thead><tr><th>{T('colPlayer')}</th>{!recap.duel && <th>{T('colReads')}</th>}<th>🔥</th><th>🍺</th></tr></thead>
         <tbody>
           {recap.scoreboard.map((s) => (
             <tr key={s.name}><td>{s.name}</td>{!recap.duel && <td>{s.reads}</td>}<td>{s.hotseat}</td><td>{s.sips}</td></tr>
@@ -506,17 +535,18 @@ function Recap({ recap, leave, isHost }) {
         </tbody>
       </table>
 
-      <button className="btn primary" onClick={leave}>New game</button>
-      <p className="fine">Screenshot it. Settle it later.</p>
+      <button className="btn primary" onClick={leave}>{T('newGame')}</button>
+      <p className="fine">{T('screenshot')}</p>
     </div>
   );
 }
 
 function TopBar({ leave }) {
+  const T = useT();
   return (
     <div className="topbar">
       <Logo small />
-      <button className="leave" onClick={leave}>Leave</button>
+      <button className="leave" onClick={leave}>{T('leave')}</button>
     </div>
   );
 }

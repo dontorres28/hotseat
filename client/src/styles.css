@@ -82,6 +82,16 @@ body {
 
 .tab-body { display: flex; flex-direction: column; gap: 16px; animation: rise-item 0.28s var(--ease) backwards; }
 
+/* Language picker */
+.lang-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+.lang-btn {
+  background: var(--card); border: 2px solid var(--line); color: var(--muted);
+  font: inherit; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 999px;
+  transition: transform 0.08s ease, border-color 0.15s ease, color 0.15s ease;
+}
+.lang-btn:active { transform: scale(0.95); }
+.lang-btn.on { border-color: var(--red); color: var(--cream); }
+
 /* Segmented control with a sliding indicator (Apple-style). */
 .seg {
   position: relative; display: grid; grid-template-columns: 1fr 1fr;

@@ -1,407 +1,74 @@
-// Prompts by mode. There is no "correct" answer — the group's majority IS the answer.
-// Keep each prompt about the people in the room.
+// Content aggregator. Each language lives in content/<lang>.js (index-aligned
+// arrays); here we resolve by the room's language and keep language-neutral
+// metadata (challenge min-players, pack ids/emojis, wildcard ids).
+import EN from './content/en.js';
+import DE from './content/de.js';
 
 export const MODES = ['chill', 'roast', 'spicy', 'chaos', 'duel'];
-
-// Modes that require every phone to opt in before the room can start.
 export const CONSENT_MODES = ['spicy', 'chaos'];
+export const LANGS = ['en', 'de']; // es, fr, it coming next
+const LANG_MAP = { en: EN, de: DE };
+export function isLang(l) { return LANGS.includes(l); }
+function L(l) { return LANG_MAP[l] || EN; }
 
-const PROMPTS = {
-  chill: [
-    "Who here would survive longest on a desert island?",
-    "Who's most likely to become famous?",
-    "Who gives the best advice?",
-    "Who would win in a fight against a goose?",
-    "Who's the most likely to cry at a movie?",
-    "Who would make the best president?",
-    "Who's secretly the smartest in the room?",
-    "Who would you trust with your phone unlocked?",
-    "Who's most likely to adopt five dogs?",
-    "Who here could talk their way out of anything?",
-    "Who would forget their own birthday?",
-    "Who's the best cook in the room?",
-    "Who would survive a zombie apocalypse the longest?",
-    "Who's most likely to start a successful business?",
-    "Who gives the worst directions?",
-  ],
-  roast: [
-    "Who's most likely to text their ex tonight?",
-    "Who peaked in high school?",
-    "Who's the worst driver here?",
-    "Who takes the longest to reply to a text?",
-    "Who's most likely to get kicked out of a bar?",
-    "Who's the biggest liar in the room?",
-    "Who would sell out the group first?",
-    "Who's most likely to ghost someone?",
-    "Who has the worst taste in music?",
-    "Who's faking it the hardest right now?",
-    "Who's most likely to cause the group chat drama?",
-    "Who's the cheapest person here?",
-    "Who would lose a fight to a toddler?",
-    "Who's most likely to get catfished?",
-    "Who thinks they're funnier than they are?",
-  ],
-  spicy: [
-    "Who here has a crush on someone in this room?",
-    "Who's most likely to leave with someone tonight?",
-    "Who's the best kisser in the room (guess)?",
-    "Who has the wildest story they haven't told?",
-    "Who's most likely to send a risky text?",
-    "Who would you least expect to be freaky?",
-    "Who's most likely to hook up with an ex again?",
-    "Who here has thought about someone in this room?",
-    "Who gives off the most chaotic dating-app energy?",
-    "Who's most likely to kiss a stranger tonight?",
-    "Who's the biggest flirt in the room?",
-    "Who would survive one week of everyone reading their DMs?",
-  ],
-};
-
-// Premium prompt packs — the monetization unit. A room's deck is its mode's
-// prompts plus any packs the host has unlocked and enabled. Prompts here are a
-// starter set; expand per pack before launch.
-export const PACKS = [
-  {
-    id: 'college', name: 'College', emoji: '🎓',
-    blurb: 'Dorm-era chaos and questionable decisions.',
-    prompts: [
-      "Who's most likely to still talk about their college years at 40?",
-      "Who pulled the most all-nighters?",
-      "Who skipped the most classes and still passed?",
-      "Who had the messiest dorm?",
-      "Who peaked at a house party?",
-      "Who's most likely to have emailed a professor something they regret?",
-      "Who had the most chaotic roommate story?",
-      "Who would survive finals week on snacks and zero sleep?",
-      "Who's most likely to still owe someone in this room money?",
-      "Who has a college story they still won't tell?",
-    ],
-  },
-  {
-    id: 'work', name: 'Work Crew', emoji: '💼',
-    blurb: 'Office-party energy for coworkers.',
-    prompts: [
-      "Who's most likely to reply-all by accident?",
-      "Who takes the longest lunch?",
-      "Who's secretly looking for a new job?",
-      "Who would throw the group under the bus in a meeting?",
-      "Who's most likely to get caught slacking?",
-      "Who sends the most unnecessary emails?",
-      "Who's the office gossip?",
-      "Who's most likely to become the boss one day?",
-      "Who would survive longest if the wifi died forever?",
-      "Who's most likely to cry in a performance review?",
-    ],
-  },
-  {
-    id: 'couples', name: 'Couples', emoji: '💘',
-    blurb: 'For double dates and group dinners.',
-    prompts: [
-      "Who fights the most with their partner in private?",
-      "Who wears the pants in their relationship?",
-      "Who's most likely to propose next?",
-      "Whose relationship started as a situationship?",
-      "Who's the bigger romantic?",
-      "Who's most likely to forget an anniversary?",
-      "Who overshares about their relationship the most?",
-      "Who would survive longest single?",
-      "Who stalks their partner's ex the most?",
-      "Who's secretly the most competitive with their partner?",
-    ],
-  },
-  {
-    id: 'besties', name: 'Besties', emoji: '👯',
-    blurb: 'Deep friend-group history.',
-    prompts: [
-      "Who's known everyone here the longest?",
-      "Who's the mom friend of the group?",
-      "Who's most likely to start drama and deny it?",
-      "Who gives the best advice at 2am?",
-      "Who's the flakiest in the group chat?",
-      "Who plans the trip nobody ends up taking?",
-      "Who would bail you out of jail, no questions asked?",
-      "Who's the group's biggest oversharer?",
-      "Who's most likely to cry at a wedding?",
-      "Who actually keeps this group together?",
-    ],
-  },
-  {
-    id: 'travel', name: 'Travel', emoji: '✈️',
-    blurb: 'For the trip group.',
-    prompts: [
-      "Who's most likely to miss the flight?",
-      "Who overpacks the most?",
-      "Who's the self-appointed trip planner?",
-      "Who'd get lost in a city even with GPS?",
-      "Who's most likely to lose their passport?",
-      "Who would try the sketchiest street food?",
-      "Who complains the most on vacation?",
-      "Who's most likely to start a vacation romance?",
-      "Who blows the budget on day one?",
-      "Who falls asleep first every night of the trip?",
-    ],
-  },
-  {
-    id: 'throwback', name: 'Throwback', emoji: '📼',
-    blurb: 'Who were you back then?',
-    prompts: [
-      "Who was the class clown?",
-      "Who was secretly the teacher's pet?",
-      "Who had the worst haircut growing up?",
-      "Who's changed the most since high school?",
-      "Who had the most embarrassing childhood phase?",
-      "Who was most likely to get grounded?",
-      "Who peaked in high school?",
-      "Who had the biggest glow-up?",
-      "Who still acts like they're 17?",
-      "Who was the first to get in real trouble?",
-    ],
-  },
-  {
-    id: 'deep', name: 'Deep', emoji: '🧠',
-    blurb: 'Goes a little deeper. Good sober too.',
-    prompts: [
-      "Who's grown the most this year?",
-      "Who's the most underrated person in the room?",
-      "Who's most likely to change the world?",
-      "Who hides their stress the best?",
-      "Who's the most honest person here?",
-      "Who would you trust with a secret?",
-      "Who's most likely to end up genuinely successful?",
-      "Who needs to hear they're doing great?",
-      "Who's the glue in your life right now?",
-      "Who's braver than they realize?",
-    ],
-  },
-];
-
-export function packById(id) {
-  return PACKS.find((p) => p.id === id) || null;
-}
-
-// A challenge that leans on a crowd (everyone/waterfall/go-around) needs 3+
-// players to make sense; the rest work with 2. ponytail: keyword heuristic, not
-// per-challenge tags — tag individually if a phrase slips through.
+// Crowd heuristic from the canonical English text; applies to every language by index.
 const CROWD_RE = /\b(everyone|anyone who|the room|the group|waterfall|social|nose goes|go around|first to blank|youngest|oldest|tallest|house rule|bartender|two people|pick two)\b/i;
-export function challengeMinPlayers(text) {
-  return CROWD_RE.test(text) ? 3 : 2;
+export function challengeMinPlayers(text) { return CROWD_RE.test(text) ? 3 : 2; }
+const CHALLENGE_MIN = EN.challenges.map(challengeMinPlayers);
+const DARE_MIN = EN.dares.map(challengeMinPlayers);
+
+// Back-compat for tests: the English arrays.
+export const CHALLENGES = EN.challenges;
+export const DARES = EN.dares;
+
+// Language-neutral pack + wildcard metadata.
+const PACK_META = [
+  { id: 'college', emoji: '🎓' },
+  { id: 'work', emoji: '💼' },
+  { id: 'couples', emoji: '💘' },
+  { id: 'besties', emoji: '👯' },
+  { id: 'travel', emoji: '✈️' },
+  { id: 'throwback', emoji: '📼' },
+  { id: 'deep', emoji: '🧠' },
+];
+const WILDCARD_IDS = ['minority', 'double', 'reverse'];
+
+export function packExists(id) { return PACK_META.some((p) => p.id === id); }
+
+export function promptsForMode(mode, lang) {
+  const p = L(lang).prompts;
+  if (mode === 'chaos') return [...p.chill, ...p.roast, ...p.spicy];
+  if (mode === 'duel') return [...p.chill, ...p.roast];
+  return p[mode] ?? p.chill;
 }
 
-// Wildcard rules that can flip a round. Each has an id, label, and how it scores.
-export const WILDCARDS = [
-  { id: 'minority', label: 'MINORITY WINS: the least-picked person is in the hot seat.' },
-  { id: 'double', label: 'DOUBLE TROUBLE: everyone who guesses wrong takes double.' },
-  { id: 'reverse', label: 'REVERSE: a wrong prediction is the safe one this round.' },
-];
-
-// Challenges handed out instead of (or on top of) a sip. No repeats within a game.
-// Mix of drinks, dares and chaos. There's always a non-drinking option.
-export const CHALLENGES = [
-  // --- Drinks: straight ---
-  "Take a sip.",
-  "Take two sips.",
-  "Take a big gulp.",
-  "Finish your drink.",
-  "Finish your drink if it's less than half full.",
-  "Take a drink with your non-dominant hand. Spill and take another.",
-  "Take a drink with your eyes closed.",
-  "Take as many sips as the current round number (max three).",
-  "Finish your drink, or pass it to someone who will.",
-  "Take a sip and dedicate it to your worst decision this year.",
-  // --- Drinks: hand them out ---
-  "Hand out two sips however you like.",
-  "Hand out three sips however you like.",
-  "Pick someone to drink with you.",
-  "Pick two people to each take a sip.",
-  "Everyone on your left takes a sip.",
-  "Everyone on your right takes a sip.",
-  "Pour a splash of your drink into someone else's cup. They finish it.",
-  "The person on your right picks who drinks next.",
-  "Make everyone to your right take a sip.",
-  // --- Drinks: whole room ---
-  "Social! Everyone takes a sip with you.",
-  "Waterfall: everyone drinks, and no one stops until you do.",
-  "Everyone who's single takes a sip.",
-  "Everyone in a relationship takes a sip.",
-  "Everyone wearing black takes a sip.",
-  "Everyone wearing white takes a sip.",
-  "Everyone on their phone right now takes a sip.",
-  "Everyone younger than you takes a sip.",
-  "Everyone older than you takes a sip.",
-  "Everyone who has kissed someone in this room takes a sip.",
-  "Everyone who's left for the bathroom since the game started drinks.",
-  "Toast to someone in the room. Everyone drinks to them.",
-  // --- Drinks: mini-games ---
-  "The person on your left decides: you take 1, 2, or 3 sips.",
-  "Rock paper scissors the person on your left. Loser drinks.",
-  "Thumb war the person across from you. Loser drinks.",
-  "Arm wrestle the person next to you. Loser takes two sips.",
-  "Staring contest with the person across from you. Blink or laugh and you drink.",
-  "Flip a coin. Call it wrong and take two sips.",
-  "Name five car brands in ten seconds, or take two sips.",
-  "Name five pizza toppings in ten seconds, or take two sips.",
-  "Say the alphabet backwards. Mess up and take a sip.",
-  "Pick a category and go around the room naming things. First to blank takes a sip.",
-  "Start a nose goes: touch your nose. Last person to copy you drinks.",
-  "Say 'go', then the last person to raise their hand drinks.",
-  "Guess who lands in the hot seat next. Wrong and take two sips.",
-  // --- Drinks: rules & buddies ---
-  "Make a house rule now. Anyone who breaks it drinks, you included.",
-  "Pick a drinking buddy. For the rest of the game, when one of you drinks, so does the other.",
-  "You're the bartender this round: anyone who drinks, you take one too.",
-  "Cheers the person across from you. You both drink.",
-  "You and the youngest person here both drink.",
-  "Take a sip every time someone says your name until the next reveal.",
-  "Take a sip every time you laugh until the next reveal.",
-  "Take a sip each time you say 'um' or 'like' until the next reveal.",
-  "Sip every time someone swears until the next reveal.",
-  "Hold your pinky up until the next reveal. Forget and you drink.",
-  "Take a sip, then pick who takes the next challenge.",
-  "Never have I ever: say one true thing. Anyone who's done it drinks.",
-  "Give out a sip for every ring, watch or bracelet you're wearing.",
-  "Take a sip for every sibling you have (max three).",
-  // --- Dares: drink-or-do ---
-  "Do 10 pushups, or take two sips.",
-  "Let the person across from you give you a dare, or take two sips.",
-  "Reveal who you last texted, or take two sips.",
-  "Tell the group something you've never told them, or take two sips.",
-  "Text the last person you texted a single heart emoji, or take two sips.",
-  "Let the person on your right post one word to your story, or take two sips.",
-  // --- Dares: performance ---
-  "Do your best impression of someone else in the room.",
-  "Talk in an accent until the next reveal. Drop it and you drink.",
-  "Serenade the person across from you for 15 seconds.",
-  "Sing your next sentence like it's a musical.",
-  "Do your best catwalk to the nearest door and back.",
-  "Do your best evil villain laugh.",
-  "Do a 20-second infomercial for the nearest object.",
-  "Do a 15-second stand-up bit roasting the host.",
-  "Dramatically re-enact how you think you'll die.",
-  "Give a dramatic acceptance speech for Hot Seat of the Night.",
-  "Do your best model pose and hold it until the next reveal.",
-  "Act out your most-used emoji.",
-  "Imitate the last person who spoke.",
-  "Give the person on your right a dramatic backstory on the spot.",
-  // --- Dares: speech rules ---
-  "Talk about yourself in the third person until the next reveal.",
-  "Whisper everything you say until the next reveal.",
-  "Speak only in questions until the next reveal.",
-  "Narrate the room like a nature documentary until the next reveal.",
-  "Bark like a dog every time someone swears until the next reveal.",
-  "Let the group pick one word you must say before every sentence until the next reveal.",
-  "End every sentence with 'for legal reasons' until the next reveal.",
-  "The group bans you from one word until the end of the night. Slip up, drink.",
-  "Say the next three things on your mind out loud.",
-  "Compliment everyone in the room in one breath.",
-  // --- Dares: phone & props ---
-  "Show the group your last Google search. No scrolling away.",
-  "Show the room your screen-time number.",
-  "Read your most recent text out loud, including who it's to.",
-  "Show the group the last photo in your camera roll.",
-  "Let the person on your right send one text from your phone to anyone they pick.",
-  "Pick a contact at random and send them a single emoji.",
-  "Swap phones with the person on your left until the next reveal. No deleting anything.",
-  "Let someone draw a small doodle on the back of your hand.",
-  // --- Dares: physical & misc ---
-  "Keep one hand on your head until the next reveal.",
-  "Do 10 squats while naming your exes out loud.",
-  "Hold eye contact with the person on your left until the next reveal. Laugh and you drink.",
-  "Swap one visible item of clothing with the person on your left.",
-  "Swap seats with the person on your left.",
-  "Switch seats with someone and copy their energy for a round.",
-  "Propose to the nearest object like you mean it.",
-  "The group gives you a nickname for the night. Only answer to it.",
-  "Give the person on your right a genuine compliment, then take a sip.",
-  "Do an impression of the host until the next reveal.",
-  // --- More sips: straight ---
-  "Take three sips.",
-  "Finish half your drink.",
-  "Chug for three seconds.",
-  "Take a sip for every vowel in your first name.",
-  "Take a sip, then another if you're smiling.",
-  "Down what's left if it's a sip or less.",
-  "Take a sip for every drink you've had tonight (max three).",
-  "Sip now, and again the next time someone cheers.",
-  "Take a sip and hold your next one for whenever you want.",
-  // --- More sips: pass them around ---
-  "Trade a sip with the person on your left: you both drink.",
-  "Point at the person on your right. They drink or dare you back.",
-  "Give the person across from you a sip, then take one yourself.",
-  "Hand someone a sip to hold over you; they cash it in whenever.",
-  "Split three sips between you and the person on your left.",
-  // --- More sips: whole room ---
-  "Everyone wearing a hoodie or hat takes a sip.",
-  "Everyone who checked their phone this round drinks.",
-  "Anyone who's had a crush on someone here takes a sip.",
-  "Group countdown from three: everyone drinks on one.",
-  "Everyone to your right finishes their sip.",
-  "Last person to put a hand on their head drinks.",
-  "Everyone who's single takes a sip, and looks happy about it.",
-  // --- More sips: mini-games ---
-  "Odd or even with the person on your left: both throw fingers. Match, you drink; miss, they do.",
-  "Word tennis with the person across from you: trade words fast. First to stall or repeat drinks.",
-  "Best of three rock paper scissors with the person on your left. Loser takes two.",
-  "Twenty questions on the person across from you. Can't guess in five? Take two.",
-  "Slap-reaction: the person on your left says 'drink' at random. Last to lift your cup drinks.",
-  // --- More rules ---
-  "New personal rule: no swearing until the next reveal. Slip, take a sip.",
-  "Pick a word. Every time you say it the rest of the game, take a sip.",
-  "You're on thin ice: next time you land in the hot seat, take two.",
-  "No saying 'I' until the next reveal. Slip, drink.",
-  // --- More dares ---
-  "Speak in a movie-trailer voice until the next reveal.",
-  "Do a trust fall onto the nearest person or couch.",
-  "Let the person on your left screenshot your lock screen.",
-  "Hand your phone to the person on your right for the next round.",
-  "Confess your last impulse buy.",
-  "Let the person across from you ask one question you must answer honestly, or take two sips.",
-  "Do a dramatic slow-motion replay of your last move.",
-  "Give a two-sentence TED talk on something you love.",
-  "Swap an accessory with the person on your left until the next reveal.",
-  "Do a dramatic reading of your last text in a Shakespeare voice.",
-];
-
-// Pure non-drinking dares, for the "swap a sip for a dare" option. No drinking here.
-export const DARES = [
-  "Do your best impression of someone else in the room.",
-  "Talk in an accent until the next reveal.",
-  "Serenade the person across from you for 15 seconds.",
-  "Show the group your last Google search. No scrolling away.",
-  "Show the room your screen-time number.",
-  "Read your most recent text out loud, including who it's to.",
-  "Show the group the last photo in your camera roll.",
-  "Talk about yourself in the third person until the next reveal.",
-  "Whisper everything you say until the next reveal.",
-  "Speak only in questions until the next reveal.",
-  "The group gives you a nickname for the night. Only answer to it.",
-  "Keep one hand on your head until the next reveal.",
-  "Do 10 squats.",
-  "Do 10 pushups.",
-  "Dramatically re-enact how you think you'll die.",
-  "Narrate the room like a nature documentary until the next reveal.",
-  "Do your best catwalk to the nearest door and back.",
-  "Do your best evil villain laugh.",
-  "Compliment everyone in the room in one breath.",
-  "Do a 20-second infomercial for the nearest object.",
-  "Do your best model pose and hold it until the next reveal.",
-  "Sing your next sentence like it's a musical.",
-  "Imitate the last person who spoke.",
-  "Do an impression of the host until the next reveal.",
-  "Give a dramatic acceptance speech for Hot Seat of the Night.",
-  "Swap seats with the person on your left.",
-];
-
-export function promptsForMode(mode) {
-  if (mode === 'chaos') {
-    // Everything mixed.
-    return [...PROMPTS.chill, ...PROMPTS.roast, ...PROMPTS.spicy];
-  }
-  if (mode === 'duel') {
-    // Head-to-head "who's more likely" — clean and roast prompts both work.
-    return [...PROMPTS.chill, ...PROMPTS.roast];
-  }
-  return PROMPTS[mode] ?? PROMPTS.chill;
+export function packPrompts(id, lang) {
+  return L(lang).packs[id]?.prompts ?? [];
 }
+
+export function packCatalog(enabled, lang) {
+  const packs = L(lang).packs;
+  return PACK_META.map((m) => ({
+    id: m.id, emoji: m.emoji,
+    name: packs[m.id]?.name ?? m.id,
+    blurb: packs[m.id]?.blurb ?? '',
+    enabled: enabled.has(m.id),
+  }));
+}
+
+export function wildcardList(lang) {
+  return L(lang).wildcards.map((label, i) => ({ id: WILDCARD_IDS[i], label }));
+}
+
+export function challengeEntries(lang) {
+  return L(lang).challenges.map((text, i) => ({ i, text, min: CHALLENGE_MIN[i] }));
+}
+
+export function dareEntries(lang) {
+  return L(lang).dares.map((text, i) => ({ text, min: DARE_MIN[i] }));
+}
+
+export function awards(lang) { return L(lang).awards; }
 
 export function shuffled(arr) {
   const a = [...arr];

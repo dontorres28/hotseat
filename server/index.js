@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { dirname, join } from 'node:path';
 import express from 'express';
 import { Server } from 'socket.io';
-import { MODES } from './content.js';
+import { MODES, isLang } from './content.js';
 import * as game from './game.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -43,10 +43,11 @@ io.on('connection', (socket) => {
     broadcast(room);
   };
 
-  socket.on('createRoom', ({ name, mode }, ack) => {
+  socket.on('createRoom', ({ name, mode, lang }, ack) => {
     if (!MODES.includes(mode)) mode = 'chill';
-    const room = game.createRoom(mode);
-    if (!room) return ack?.({ ok: false, error: 'Server is busy right now. Try again in a moment.' });
+    if (!isLang(lang)) lang = 'en';
+    const room = game.createRoom(mode, lang);
+    if (!room) return ack?.({ ok: false, error: 'busy' });
     const player = game.addPlayer(room, name, { host: true });
     ack?.({ ok: true, code: room.code, playerId: player.id });
     join(room, player);
@@ -54,9 +55,9 @@ io.on('connection', (socket) => {
 
   socket.on('joinRoom', ({ code, name }, ack) => {
     const room = game.getRoom(code);
-    if (!room) return ack?.({ ok: false, error: "That room code doesn't exist." });
-    if (room.phase !== 'lobby') return ack?.({ ok: false, error: 'That game already started.' });
-    if (game.roomFull(room)) return ack?.({ ok: false, error: 'That room is full.' });
+    if (!room) return ack?.({ ok: false, error: 'no_room' });
+    if (room.phase !== 'lobby') return ack?.({ ok: false, error: 'started' });
+    if (game.roomFull(room)) return ack?.({ ok: false, error: 'full' });
     const player = game.addPlayer(room, name);
     ack?.({ ok: true, code: room.code, playerId: player.id });
     join(room, player);

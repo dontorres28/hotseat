@@ -3,13 +3,14 @@
 // ponytail: in-memory single-process store; move rooms to Redis only if you run
 // more than one server instance.
 
-import { promptsForMode, shuffled, CHALLENGES, DARES, WILDCARDS, CONSENT_MODES, PACKS, packById, challengeMinPlayers } from './content.js';
+import { promptsForMode, shuffled, CONSENT_MODES, packExists, packPrompts, packCatalog as catalogFor, wildcardList, challengeEntries, dareEntries, awards as awardStrings } from './content.js';
 
 export function randomDare(room) {
   const n = room ? connectedCount(room) : 20;
-  const fit = DARES.filter((d) => challengeMinPlayers(d) <= n);
-  const pool = fit.length ? fit : DARES;
-  return pool[Math.floor(Math.random() * pool.length)];
+  const lang = room ? room.lang : 'en';
+  const fit = dareEntries(lang).filter((d) => d.min <= n);
+  const pool = fit.length ? fit : dareEntries(lang);
+  return pool[Math.floor(Math.random() * pool.length)].text;
 }
 
 const CODE_CHARS = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no easily-confused chars
@@ -29,17 +30,18 @@ function makeId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
-export function createRoom(mode) {
+export function createRoom(mode, lang = 'en') {
   if (rooms.size >= MAX_ROOMS) return null;
   const code = makeCode();
   const room = {
     code,
     mode,
+    lang,
     hostId: null,
     phase: 'lobby',
     round: 0,
     players: new Map(), // id -> player
-    deck: shuffled(promptsForMode(mode)),
+    deck: shuffled(promptsForMode(mode, lang)),
     deckIndex: 0,
     maxPlayers: mode === 'duel' ? 4 : 20, // duel is a 2-4 mode; everything else opens to 20
     enabledPacks: new Set(), // packs switched on for this room
@@ -61,27 +63,23 @@ export function getRoom(code) {
 // Rebuild the deck from the mode plus any enabled packs. Called at game start
 // so lobby pack choices take effect.
 export function buildDeck(room) {
-  let prompts = [...promptsForMode(room.mode)];
-  for (const id of room.enabledPacks) prompts = prompts.concat(packById(id)?.prompts ?? []);
+  let prompts = [...promptsForMode(room.mode, room.lang)];
+  for (const id of room.enabledPacks) prompts = prompts.concat(packPrompts(id, room.lang));
   room.deck = shuffled(prompts);
   room.deckIndex = 0;
 }
 
 // Toggle a pack on/off for this room. Packs are free — just a selection.
-// ponytail: no paywall for now; add Stripe here later if packs go premium.
 export function togglePack(room, packId) {
-  if (!packById(packId)) return false;
+  if (!packExists(packId)) return false;
   if (room.enabledPacks.has(packId)) room.enabledPacks.delete(packId);
   else room.enabledPacks.add(packId);
   return true;
 }
 
-// Catalog with this room's enabled state, for the lobby UI.
+// Catalog with this room's enabled state (in the room's language), for the lobby UI.
 export function packCatalog(room) {
-  return PACKS.map((p) => ({
-    id: p.id, name: p.name, emoji: p.emoji, blurb: p.blurb,
-    enabled: room.enabledPacks.has(p.id),
-  }));
+  return catalogFor(room.enabledPacks, room.lang);
 }
 
 export function addPlayer(room, name, { host = false } = {}) {
@@ -166,7 +164,8 @@ export function dealPrompt(room) {
     room.pair = null;
     // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
     const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
-    room.wildcard = roll ? WILDCARDS[Math.floor(Math.random() * WILDCARDS.length)] : null;
+    const wilds = wildcardList(room.lang);
+    room.wildcard = roll ? wilds[Math.floor(Math.random() * wilds.length)] : null;
     // The Traitor: one random player is secretly told to vote against the crowd.
     room.traitorId = active.length >= 3 ? active[Math.floor(Math.random() * active.length)].id : null;
   }
@@ -203,14 +202,13 @@ export function everyoneSubmitted(room) {
 
 function drawChallenge(room) {
   const n = connectedCount(room);
-  const fit = CHALLENGES.filter((c) => challengeMinPlayers(c) <= n); // only ones that make sense for this group size
-  const fresh = fit.filter((c) => !room.usedChallenges.has(c));
+  const fit = challengeEntries(room.lang).filter((c) => c.min <= n); // ones that make sense for this group size
+  const fresh = fit.filter((c) => !room.usedChallenges.has(c.i));
   const from = fresh.length ? fresh : fit;
   const pick = from[Math.floor(Math.random() * from.length)];
-  room.usedChallenges.add(pick);
-  // Reset once we've worked through what fits.
+  room.usedChallenges.add(pick.i); // track by index — language-neutral
   if (room.usedChallenges.size >= fit.length) room.usedChallenges.clear();
-  return pick;
+  return pick.text;
 }
 
 // Duel: two players face off, the room votes who's more likely, that player drinks.
@@ -355,16 +353,17 @@ export function recap(room) {
     return max > 0 ? players.filter((p) => p[key] === max).map((p) => p.name) : [];
   };
   const duel = room.mode === 'duel'; // no predictions or traitor in duel
+  const A = awardStrings(room.lang);
   return {
     rounds: room.round,
     duel,
     awards: [
-      { title: 'Most Roasted', emoji: '🔥', winners: award('timesInHotSeat'), stat: 'times in the hot seat' },
+      { title: A.mostRoasted.title, emoji: '🔥', winners: award('timesInHotSeat'), stat: A.mostRoasted.stat },
       ...(duel ? [] : [
-        { title: 'Best Mind Reader', emoji: '🔮', winners: award('correctPredictions'), stat: 'rooms read right' },
-        { title: 'Biggest Traitor', emoji: '😈', winners: award('traitorWins'), stat: 'traitor missions pulled off' },
+        { title: A.mindReader.title, emoji: '🔮', winners: award('correctPredictions'), stat: A.mindReader.stat },
+        { title: A.traitor.title, emoji: '😈', winners: award('traitorWins'), stat: A.traitor.stat },
       ]),
-      { title: 'The Tank', emoji: '🍺', winners: award('sips'), stat: 'sips taken' },
+      { title: A.tank.title, emoji: '🍺', winners: award('sips'), stat: A.tank.stat },
     ],
     scoreboard: players
       .map((p) => ({ name: p.name, reads: p.correctPredictions, hotseat: p.timesInHotSeat, sips: p.sips }))
@@ -377,6 +376,7 @@ export function snapshot(room) {
   return {
     code: room.code,
     mode: room.mode,
+    lang: room.lang,
     phase: room.phase,
     round: room.round,
     hostId: room.hostId,
