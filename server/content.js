@@ -33,6 +33,8 @@ const PACK_META = [
   { id: 'travel', emoji: '✈️' },
   { id: 'throwback', emoji: '📼' },
   { id: 'deep', emoji: '🧠' },
+  { id: 'sports', emoji: '🏆' },
+  { id: 'fashion', emoji: '👗' },
 ];
 const WILDCARD_IDS = ['minority', 'double', 'reverse'];
 
