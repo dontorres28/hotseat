@@ -3,7 +3,7 @@
 // ponytail: in-memory single-process store; move rooms to Redis only if you run
 // more than one server instance.
 
-import { promptsForMode, shuffled, CONSENT_MODES, packExists, packPrompts, packCatalog as catalogFor, wildcardList, challengeEntries, dareEntries, awards as awardStrings } from './content.js';
+import { promptsForMode, shuffled, CONSENT_MODES, packExists, packPrompts, packCatalog as catalogFor, wildcardList, challengeEntries, dareEntries, awards as awardStrings, topicsList, validatePrompt } from './content.js';
 
 export function randomDare(room) {
   const n = room ? connectedCount(room) : 20;
@@ -28,6 +28,23 @@ function makeCode() {
 
 function makeId() {
   return Math.random().toString(36).slice(2, 10);
+}
+
+function pickTopic(lang) {
+  const t = topicsList(lang);
+  return t[Math.floor(Math.random() * t.length)];
+}
+
+// A player submits (or replaces) their one lobby question. Validated server-side.
+export function setCustomPrompt(room, playerId, text) {
+  const p = room.players.get(playerId);
+  if (!p) return { error: 'no_player' };
+  if (room.phase !== 'lobby') return { error: 'closed' };
+  const names = [...room.players.values()].map((x) => x.name);
+  const res = validatePrompt(text, names);
+  if (res.error) return res;
+  p.customPrompt = res.text;
+  return { ok: true };
 }
 
 export function createRoom(mode, lang = 'en') {
@@ -66,6 +83,8 @@ export function getRoom(code) {
 export function buildDeck(room) {
   let prompts = [...promptsForMode(room.mode, room.lang)];
   for (const id of room.enabledPacks) prompts = prompts.concat(packPrompts(id, room.lang));
+  // Fold in the questions players wrote in the lobby.
+  prompts = prompts.concat([...room.players.values()].map((p) => p.customPrompt).filter(Boolean));
   room.deck = shuffled(prompts);
   room.deckIndex = 0;
 }
@@ -96,6 +115,8 @@ export function addPlayer(room, name, { host = false } = {}) {
     sips: 0,
     tokens: 0,       // revenge tokens
     traitorWins: 0,  // rounds pulled off as the Traitor
+    topic: pickTopic(room.lang), // seed for the player's own question
+    customPrompt: null,
   };
   room.players.set(id, player);
   if (host || !room.hostId) room.hostId = id;
@@ -394,6 +415,7 @@ export function snapshot(room) {
     packs: packCatalog(room),
     players: [...room.players.values()].map((p) => ({
       id: p.id, name: p.name, connected: p.connected, consented: p.consented, tokens: p.tokens,
+      topic: p.topic, addedPrompt: !!p.customPrompt,
     })),
     prompt: room.phase === 'prompt' ? room.prompt : null,
     wildcard: room.phase === 'prompt' ? room.wildcard : null,

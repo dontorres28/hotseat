@@ -80,6 +80,24 @@ body {
 .field:focus { border-color: var(--red); }
 .code-in { text-align: center; letter-spacing: 10px; font-family: Anton, sans-serif; font-size: 34px; }
 
+/* Player-written question card (lobby). */
+.addq { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.addq-head { font-weight: 800; font-size: 15px; color: var(--cream); }
+.addq-topic { color: var(--muted); font-size: 14px; }
+.addq-topic strong { color: var(--red); }
+.addq-input {
+  width: 100%; background: #0f0e0d; border: 2px solid var(--line); color: var(--cream);
+  font: inherit; font-size: 16px; padding: 12px 14px; border-radius: 12px; outline: none;
+}
+.addq-input:focus { border-color: var(--red); }
+.addq-err { color: var(--red); font-size: 13px; font-weight: 700; }
+.addq-done { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #5fd597; font-weight: 700; }
+.addq-change {
+  background: transparent; border: none; color: var(--muted); font: inherit; font-weight: 700;
+  font-size: 13px; text-decoration: underline; text-underline-offset: 3px; cursor: pointer;
+}
+.addq-rule { font-size: 12px; }
+
 .tab-body { display: flex; flex-direction: column; gap: 16px; animation: rise-item 0.28s var(--ease) backwards; }
 
 /* Language dropdown — compact, right-aligned, shows the acronym */

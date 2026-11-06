@@ -73,6 +73,41 @@ export function dareEntries(lang) {
 
 export function awards(lang) { return L(lang).awards; }
 
+export function topicsList(lang) { return L(lang).topics || EN.topics; }
+
+// Guardrails for player-written questions. ponytail: a plain word-boundary
+// blocklist — swap for a moderation API only if real abuse shows up. Covers
+// slurs + explicit terms across the five languages we ship.
+const BANNED = [
+  // slurs (en + common cross-language)
+  'nigger', 'nigga', 'faggot', 'fag', 'retard', 'retarded', 'tranny', 'kike',
+  'spic', 'chink', 'coon', 'wetback', 'dyke', 'negro', 'neger', 'schwuchtel',
+  'maricon', 'maricón', 'pédé', 'pede', 'frocio', 'ricchione',
+  // explicit sexual / violence
+  'rape', 'rapist', 'molest', 'pedo', 'pedophile', 'incest', 'bestiality',
+  'porn', 'blowjob', 'cum', 'jizz', 'coño', 'violación', 'violacion', 'stupro',
+  // hard profanity
+  'fuck', 'motherfucker', 'cunt', 'cock', 'pussy', 'whore', 'slut',
+  'fick', 'hure', 'fotze', 'puta', 'mierda', 'putain', 'merde', 'cazzo', 'stronzo',
+];
+const BANNED_RE = new RegExp('\\b(' + BANNED.join('|') + ')\\b', 'i');
+const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+// Returns { text } if clean, or { error } naming why. playerNames blocks
+// questions that single out one person.
+export function validatePrompt(text, playerNames = []) {
+  const t = String(text ?? '').replace(/\s+/g, ' ').trim();
+  if (t.length < 6) return { error: 'tooShort' };
+  if (t.length > 120) return { error: 'tooLong' };
+  if (BANNED_RE.test(t)) return { error: 'offensive' };
+  const names = playerNames.map((n) => String(n).trim()).filter((n) => n.length >= 2);
+  if (names.length) {
+    const nameRe = new RegExp('\\b(' + names.map(escapeRe).join('|') + ')\\b', 'i');
+    if (nameRe.test(t)) return { error: 'targeting' };
+  }
+  return { text: t };
+}
+
 export function shuffled(arr) {
   const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {

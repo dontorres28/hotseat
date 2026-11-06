@@ -271,6 +271,8 @@ function Lobby({ state, me, isHost, leave }) {
         ) : <span className="muted">{totalRounds}</span>}
       </div>
 
+      <AddQuestion you={you} />
+
       <Packs packs={state.packs || []} isHost={isHost} />
 
       {needMyConsent && (
@@ -284,6 +286,45 @@ function Lobby({ state, me, isHost, leave }) {
       ) : (
         <p className="muted center">{T('waitingHost')}</p>
       )}
+    </div>
+  );
+}
+
+// Each player writes one question, seeded by a topic. Guardrails run server-side.
+function AddQuestion({ you }) {
+  const T = useT();
+  const [text, setText] = useState('');
+  const [err, setErr] = useState(null);
+  const [editing, setEditing] = useState(false);
+  if (!you) return null;
+  const done = you.addedPrompt && !editing;
+  const submit = () => {
+    setErr(null);
+    socket.emit('addPrompt', { text }, (res) => {
+      if (res?.ok) { setText(''); setEditing(false); }
+      else setErr(res?.error || 'tooShort');
+    });
+  };
+  return (
+    <div className="addq">
+      <div className="addq-head">✍️ {T('addQ')}</div>
+      {done ? (
+        <div className="addq-done">
+          <span>{T('addQDone')}</span>
+          <button className="addq-change" onClick={() => setEditing(true)}>{T('addQChange')}</button>
+        </div>
+      ) : (
+        <>
+          <p className="addq-topic">{T('addQTopic')} <strong>{you.topic}</strong></p>
+          <input className="addq-input" maxLength={120} value={text}
+            onChange={(e) => { setText(e.target.value); setErr(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && text.trim().length >= 6) submit(); }}
+            placeholder={T('addQPlaceholder')} />
+          {err && <p className="addq-err">{T('addQErr.' + err)}</p>}
+          <button className="btn ghost" disabled={text.trim().length < 6} onClick={submit}>{T('addQSubmit')}</button>
+        </>
+      )}
+      <p className="muted addq-rule">{T('addQRule')}</p>
     </div>
   );
 }

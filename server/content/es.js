@@ -344,4 +344,8 @@ export default {
     "Da un discurso de agradecimiento dramático por el Hot Seat de la noche.",
     "Cámbiate de lugar con la persona a tu izquierda.",
   ],
+  topics: [
+    "Salidas nocturnas", "El dinero", "El futuro", "La comida", "Los viajes",
+    "Talentos ocultos", "Malos hábitos", "Supervivencia", "La fama", "Amores y flechazos",
+  ],
 };

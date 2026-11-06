@@ -114,6 +114,16 @@ io.on('connection', (socket) => {
     game.setMax(room, max); broadcast(room);
   });
 
+  // A player writes their one custom question in the lobby.
+  socket.on('addPrompt', ({ text }, ack) => {
+    if (!bound) return ack?.({ ok: false });
+    const room = game.getRoom(bound.code);
+    if (!room) return ack?.({ ok: false, error: 'no_room' });
+    const res = game.setCustomPrompt(room, bound.playerId, text);
+    if (res.ok) broadcast(room);
+    ack?.(res.ok ? { ok: true } : { ok: false, error: res.error });
+  });
+
   socket.on('setRounds', ({ rounds }) => {
     if (!bound) return;
     const room = game.getRoom(bound.code);

@@ -344,4 +344,9 @@ export default {
     "Give a dramatic acceptance speech for Hot Seat of the Night.",
     "Swap seats with the person on your left.",
   ],
+  // Seed topics for player-written questions. Kept broad and group-safe.
+  topics: [
+    "Nights out", "Money", "The future", "Food", "Travel",
+    "Secret talents", "Bad habits", "Survival", "Fame", "Love & crushes",
+  ],
 };

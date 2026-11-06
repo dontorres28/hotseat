@@ -12,6 +12,7 @@ import IT from './content/it.js';
 for (const [lang, T] of [['de', DE], ['es', ES], ['fr', FR], ['it', IT]]) {
   assert.equal(EN.challenges.length, T.challenges.length, `${lang} challenge counts aligned`);
   assert.equal(EN.dares.length, T.dares.length, `${lang} dare counts aligned`);
+  assert.equal(EN.topics.length, T.topics.length, `${lang} topic counts aligned`);
   assert.equal(EN.wildcards.length, T.wildcards.length, `${lang} wildcard counts aligned`);
   for (const m of ['chill', 'roast', 'spicy']) {
     assert.equal(EN.prompts[m].length, T.prompts[m].length, `${lang} prompt count aligned: ${m}`);
@@ -261,6 +262,34 @@ function room4(mode = 'chill') {
   game.submit(r, c.id, a.id); game.submit(r, d.id, b.id); // 2-2
   const rev2 = game.reveal(r);
   assert.ok(rev2.tie && rev2.drinkers.length === 2, 'a tie makes both drink');
+}
+
+// Custom lobby questions: validate guardrails and fold into the deck.
+{
+  const r = game.createRoom('chill', 'en');
+  const ana = game.addPlayer(r, 'Ana', { host: true });
+  const ben = game.addPlayer(r, 'Ben');
+  assert.ok(ana.topic, 'players get a seeded topic');
+
+  // Clean question is accepted.
+  assert.ok(game.setCustomPrompt(r, ana.id, "Who's most likely to move abroad?").ok, 'clean prompt accepted');
+  assert.equal(ben.customPrompt, null, "a player's prompt is their own");
+
+  // Offensive word rejected.
+  assert.equal(game.setCustomPrompt(r, ben.id, 'Who is the biggest fuck up here?').error, 'offensive', 'offensive rejected');
+  // Naming a player rejected.
+  assert.equal(game.setCustomPrompt(r, ben.id, 'Who would date Ana first?').error, 'targeting', 'targeting a player rejected');
+  // Too short rejected.
+  assert.equal(game.setCustomPrompt(r, ben.id, 'who?').error, 'tooShort', 'too short rejected');
+
+  // Accepted customs land in the built deck.
+  game.buildDeck(r);
+  assert.ok(r.deck.includes("Who's most likely to move abroad?"), 'custom prompt is in the deck');
+  assert.ok(!r.deck.some((p) => /fuck/i.test(p)), 'rejected prompt never reaches the deck');
+
+  // Can't add once the game has started.
+  game.dealPrompt(r);
+  assert.equal(game.setCustomPrompt(r, ana.id, 'Who would win a staring contest?').error, 'closed', 'closed after start');
 }
 
 console.log('ok — all game checks passed');

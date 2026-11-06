@@ -344,4 +344,8 @@ export default {
     "Fais un discours de remerciement dramatique pour le Hot Seat de la soirée.",
     "Change de place avec la personne à ta gauche.",
   ],
+  topics: [
+    "Les soirées", "L'argent", "Le futur", "La bouffe", "Les voyages",
+    "Talents cachés", "Mauvaises habitudes", "La survie", "La célébrité", "Amours et béguins",
+  ],
 };

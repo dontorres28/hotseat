@@ -344,4 +344,8 @@ export default {
     "Halt eine dramatische Dankesrede für den Hot Seat der Nacht.",
     "Tausch den Platz mit der Person links von dir.",
   ],
+  topics: [
+    "Partynächte", "Geld", "Die Zukunft", "Essen", "Reisen",
+    "Versteckte Talente", "Schlechte Angewohnheiten", "Überleben", "Ruhm", "Liebe & Schwärmereien",
+  ],
 };

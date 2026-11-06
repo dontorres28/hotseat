@@ -344,4 +344,8 @@ export default {
     "Fai un drammatico discorso di ringraziamento per il Hot Seat della serata.",
     "Scambia posto con la persona alla tua sinistra.",
   ],
+  topics: [
+    "Serate fuori", "I soldi", "Il futuro", "Il cibo", "I viaggi",
+    "Talenti nascosti", "Brutte abitudini", "Sopravvivenza", "La fama", "Amori e cotte",
+  ],
 };
