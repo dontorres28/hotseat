@@ -3,11 +3,12 @@
 // metadata (challenge min-players, pack ids/emojis, wildcard ids).
 import EN from './content/en.js';
 import DE from './content/de.js';
+import ES from './content/es.js';
 
 export const MODES = ['chill', 'roast', 'spicy', 'chaos', 'duel'];
 export const CONSENT_MODES = ['spicy', 'chaos'];
-export const LANGS = ['en', 'de']; // es, fr, it coming next
-const LANG_MAP = { en: EN, de: DE };
+export const LANGS = ['en', 'de', 'es']; // fr, it coming next
+const LANG_MAP = { en: EN, de: DE, es: ES };
 export function isLang(l) { return LANGS.includes(l); }
 function L(l) { return LANG_MAP[l] || EN; }
 

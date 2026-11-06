@@ -4,22 +4,23 @@ import * as game from './game.js';
 import { CHALLENGES, challengeMinPlayers } from './content.js';
 import EN from './content/en.js';
 import DE from './content/de.js';
+import ES from './content/es.js';
 
-// Language files must stay index-aligned, and a translated room must resolve.
-{
-  assert.equal(EN.challenges.length, DE.challenges.length, 'challenge counts aligned');
-  assert.equal(EN.dares.length, DE.dares.length, 'dare counts aligned');
-  assert.equal(EN.wildcards.length, DE.wildcards.length, 'wildcard counts aligned');
+// Every translation file must stay index-aligned with English, and a translated room must resolve.
+for (const [lang, T] of [['de', DE], ['es', ES]]) {
+  assert.equal(EN.challenges.length, T.challenges.length, `${lang} challenge counts aligned`);
+  assert.equal(EN.dares.length, T.dares.length, `${lang} dare counts aligned`);
+  assert.equal(EN.wildcards.length, T.wildcards.length, `${lang} wildcard counts aligned`);
   for (const m of ['chill', 'roast', 'spicy']) {
-    assert.equal(EN.prompts[m].length, DE.prompts[m].length, `prompt count aligned: ${m}`);
+    assert.equal(EN.prompts[m].length, T.prompts[m].length, `${lang} prompt count aligned: ${m}`);
   }
   for (const id of Object.keys(EN.packs)) {
-    assert.ok(DE.packs[id], `de has pack ${id}`);
-    assert.equal(EN.packs[id].prompts.length, DE.packs[id].prompts.length, `pack prompts aligned: ${id}`);
+    assert.ok(T.packs[id], `${lang} has pack ${id}`);
+    assert.equal(EN.packs[id].prompts.length, T.packs[id].prompts.length, `${lang} pack prompts aligned: ${id}`);
   }
-  const r = game.createRoom('chill', 'de');
+  const r = game.createRoom('chill', lang);
   game.buildDeck(r);
-  assert.ok(r.deck.length > 0 && r.deck[0] !== EN.prompts.chill[0], 'german room resolves german prompts');
+  assert.ok(r.deck.length > 0 && r.deck[0] !== EN.prompts.chill[0], `${lang} room resolves translated prompts`);
 }
 
 // Challenge fit: crowd challenges need 3+, and a 2-player game never draws one.
