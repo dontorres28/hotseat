@@ -37,14 +37,20 @@ body {
   font-family: 'Satoshi', system-ui, -apple-system, sans-serif;
   font-weight: 500;
   overscroll-behavior: none;
+  /* no long-press text selection / iOS callout on game UI */
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
 }
+input, textarea, select { -webkit-user-select: text; user-select: text; }
 
 #root { min-height: 100dvh; }
 
 .screen {
   max-width: 520px;
   margin: 0 auto;
-  padding: 20px 18px 40px;
+  /* respect notch / home indicator when installed to the home screen (fullscreen) */
+  padding:
+    calc(20px + env(safe-area-inset-top)) calc(18px + env(safe-area-inset-right))
+    calc(40px + env(safe-area-inset-bottom)) calc(18px + env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
   gap: 18px;
@@ -418,7 +424,7 @@ body {
 
 /* 18+ age gate */
 .agegate { gap: 15px; position: relative; text-align: center; padding-top: 44px; }
-.agegate-lang { position: absolute; top: 18px; right: 18px; }
+.agegate-lang { position: absolute; top: calc(18px + env(safe-area-inset-top)); right: calc(18px + env(safe-area-inset-right)); }
 .age-h1 { font-family: Anton, sans-serif; font-size: 34px; text-transform: uppercase; letter-spacing: 1px; color: var(--cream); line-height: 1.05; margin-top: 8px; }
 .age-body { color: var(--muted); font-size: 15px; line-height: 1.45; max-width: 440px; }
 .agegate .btn.primary, .agegate-leave { width: 100%; max-width: 440px; }
@@ -431,7 +437,7 @@ body {
 
 /* legal modal (bottom sheet) */
 .legal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: flex; align-items: flex-end; justify-content: center; z-index: 100; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
-.legal-sheet { position: relative; width: 100%; max-width: 560px; max-height: 86vh; overflow-y: auto; background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; padding: 26px 22px 44px; text-align: left; animation: rise 0.3s var(--ease) both; }
+.legal-sheet { position: relative; width: 100%; max-width: 560px; max-height: 86vh; overflow-y: auto; background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; padding: 26px 22px calc(44px + env(safe-area-inset-bottom)); text-align: left; animation: rise 0.3s var(--ease) both; }
 .legal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
 .legal-h2 { font-family: Anton, sans-serif; font-size: 28px; text-transform: uppercase; color: var(--cream); letter-spacing: 1px; padding-right: 30px; }
 .legal-updated { color: var(--muted); font-size: 12px; margin: 4px 0 16px; }
