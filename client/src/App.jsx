@@ -16,7 +16,8 @@ const LS_LANG = 'hotseat.lang';
 const LS_AGE = 'hotseat.age';
 
 // Legal docs (English). Templates — have a lawyer review for your jurisdiction.
-const CONTACT = 'your-email@example.com'; // TODO: replace with a real contact address
+const OPERATOR = '[your name or business]'; // TODO: the person/company that runs the game (the GDPR "data controller")
+const CONTACT = 'your-email@example.com';    // TODO: replace with a real contact address
 const LEGAL = {
   updated: 'Last updated: November 2025',
   terms: {
@@ -27,18 +28,22 @@ const LEGAL = {
       'Assumption of risk & limitation of liability: you are solely responsible for your own conduct and for deciding whether, what, and how much to drink. To the fullest extent permitted by law, the creators of HOT SEAT accept no liability for any injury, loss, or damage arising from use of the game, including anything related to alcohol consumption. Never drink and drive. Know your limit.',
       'User content: players may submit their own questions. You are responsible for what you submit; do not submit unlawful, hateful, or offensive content. Submissions are filtered automatically but we do not guarantee moderation and are not responsible for user-generated content.',
       'The game is provided "as is", without warranties of any kind. We may change or discontinue it at any time.',
+      'Nothing in these terms limits any mandatory consumer or data-protection rights you have under the laws of your own country.',
       'Questions: ' + CONTACT,
     ],
   },
   privacy: {
     title: 'Privacy Policy',
     body: [
-      'We keep this simple because we collect almost nothing. There are no accounts and no sign-up.',
-      'What we handle: the display name you type and your in-game choices exist only in the server\'s memory for the life of a room, and are deleted shortly after the room empties. We do not store them in any database.',
-      'On your device: we use local storage only to remember your language, your age confirmation, and your current room code so you can reconnect after a refresh. This stays on your device; it is not tracking and is not shared.',
-      'We do not use advertising or analytics cookies, do not sell data, and do not knowingly collect data from anyone under legal drinking age.',
-      'Because we hold no personal records, there is nothing to export or delete on our side; clearing your browser storage removes everything kept on your device.',
-      'Contact: ' + CONTACT,
+      'HOT SEAT is run by ' + OPERATOR + ' (' + CONTACT + '), the data controller for this policy. This applies to everyone, everywhere, and reflects the GDPR (EU/UK), the CCPA (California) and similar laws. We built the game to collect as little as possible: there are no accounts and no sign-up.',
+      'Personal data we process: (1) the display name you type and your in-game choices, kept only in the server’s memory while a room is live and deleted shortly after the room empties, and never written to a database; (2) basic technical data such as your IP address, used only to carry the real-time connection and not stored by us.',
+      'Why we process it (lawful basis): to run the game session you chose to join (your request / our legitimate interest in providing the service). We ask for no more than a round needs, and we never use your data for advertising, profiling or marketing.',
+      'On your device: we store your language, your age confirmation and your current room code so you can reconnect after a refresh. This is strictly necessary functionality, not tracking, so we set no advertising or analytics cookies and show no cookie banner. It stays on your device and is removed when you clear your browser storage.',
+      'No selling, no sharing: we do not sell or share personal data, run no ads, and use no analytics or third-party trackers. (This also satisfies the CCPA “do not sell/share” right.)',
+      'International use: our server may be hosted outside your country (for example in the United States), so your connection may be handled there. Only the transient, in-memory data described above is involved, and nothing is retained.',
+      'Your rights: under the GDPR, UK GDPR, CCPA and comparable laws you may have the right to access, correct, delete, restrict or object to the processing of your data, to data portability, and to complain to your local data-protection authority. Because we keep no persistent records, there is normally nothing for us to export or erase; clearing your browser storage removes everything held on your device. For any request, contact ' + CONTACT + '.',
+      'Children: HOT SEAT is for adults of legal drinking age only. It is not directed at children and we do not knowingly process their data; if you believe a minor used it, contact us and we will help.',
+      'Changes: we may update this policy; the date above shows the current version. Contact: ' + CONTACT,
     ],
   },
   responsible: {
