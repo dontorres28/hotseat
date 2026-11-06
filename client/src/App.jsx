@@ -253,13 +253,12 @@ function Lobby({ state, me, isHost, leave }) {
   const ceiling = state.duel ? 4 : 20;
   const totalRounds = state.totalRounds ?? 10;
 
+  // Tap the code to copy just the code (not a link) — people type it to join.
   const share = async () => {
-    const url = `${window.location.origin}/?c=${state.code}`;
-    const data = { title: 'HOT SEAT', text: `HOT SEAT · ${state.code}`, url };
     try {
-      if (navigator.share) await navigator.share(data);
-      else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
-    } catch { /* dismissed */ }
+      await navigator.clipboard.writeText(state.code);
+      setCopied(true); setTimeout(() => setCopied(false), 1600);
+    } catch { /* ignore */ }
   };
 
   return (

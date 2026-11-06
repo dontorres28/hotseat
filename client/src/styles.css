@@ -78,7 +78,11 @@ body {
   outline: none;
 }
 .field:focus { border-color: var(--red); }
-.code-in { text-align: center; letter-spacing: 10px; font-family: Anton, sans-serif; font-size: 34px; }
+.code-in {
+  text-align: center; letter-spacing: 10px; font-family: Anton, sans-serif; font-size: 36px;
+  font-style: italic; text-transform: uppercase; color: var(--red); caret-color: var(--red);
+}
+.code-in::placeholder { color: var(--muted); font-style: italic; letter-spacing: 8px; }
 
 /* Player-written question card (lobby). */
 .addq { background: var(--card); border: 2px solid var(--line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
