@@ -116,9 +116,26 @@ function Verdict({ drinker, sips, challenge }) {
   return (
     <div className="verdict-hero drink">
       <div className="vh-big">🍺 {T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
-      {challenge && <p className="vh-sub">{challenge}</p>}
-      <DareSwap />
+      {challenge ? <FlipChallenge challenge={challenge} /> : <DareSwap />}
     </div>
+  );
+}
+
+// The hot seat flips a card to reveal their challenge — a beat of suspense.
+function FlipChallenge({ challenge }) {
+  const T = useT();
+  const [flipped, setFlipped] = useState(false);
+  return (
+    <>
+      <button className={'flip' + (flipped ? ' flipped' : '')} onClick={() => setFlipped(true)}
+        aria-label={T('flipHint')}>
+        <div className="flip-inner">
+          <div className="flip-face flip-front">🔄 {T('flipHint')}</div>
+          <div className="flip-face flip-back">{challenge}</div>
+        </div>
+      </button>
+      {flipped && <DareSwap />}
+    </>
   );
 }
 
@@ -223,7 +240,7 @@ function Lobby({ state, me, isHost, leave }) {
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
-    const data = { title: 'HOT SEAT', text: `HOT SEAT — ${state.code}`, url };
+    const data = { title: 'HOT SEAT', text: `HOT SEAT · ${state.code}`, url };
     try {
       if (navigator.share) await navigator.share(data);
       else { await navigator.clipboard.writeText(url); setCopied(true); setTimeout(() => setCopied(false), 1600); }
