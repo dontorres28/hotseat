@@ -47,7 +47,7 @@ body {
   padding: 20px 18px 40px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 18px;
   min-height: 100dvh;
   animation: rise 0.34s var(--ease) both;
 }
@@ -244,8 +244,9 @@ body {
 
 /* --- Reveal --- */
 .hotseat-card {
-  background: var(--card); border: 2px solid var(--red); border-radius: 16px; padding: 18px; text-align: center;
+  background: var(--card); border: 2px solid var(--red); border-radius: 16px; padding: 20px; text-align: center;
   box-shadow: 0 0 40px rgba(232, 53, 43, 0.22);
+  display: flex; flex-direction: column; gap: 8px;
 }
 .hotseat-name { font-family: Anton, sans-serif; font-size: 40px; color: var(--red); transform: skewX(-5deg); animation: pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
 @keyframes pop { from { opacity: 0; transform: skewX(-5deg) scale(0.5); } to { opacity: 1; transform: skewX(-5deg) scale(1); } }
@@ -263,8 +264,8 @@ body {
 
 /* Big, instant, color-coded verdict — the thing a drunk player reads in half a second. */
 .verdict-hero {
-  border-radius: 18px; padding: 22px 18px; text-align: center;
-  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  border-radius: 18px; padding: 26px 20px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
   animation: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
 }
 .verdict-hero.safe { background: #122018; border: 3px solid #2f7a50; }
@@ -276,7 +277,7 @@ body {
 }
 .verdict-hero.safe .vh-big { color: #5fd597; }
 .vh-sub { font-size: 17px; font-weight: 700; color: var(--cream); line-height: 1.25; max-width: 92%; }
-.verdict-hero .swap-btn { margin-top: 10px; }
+.verdict-hero .swap-btn { margin-top: 2px; }
 
 /* Demoted vote bars (secondary info under the verdict) */
 .bars.small { opacity: 0.75; }
