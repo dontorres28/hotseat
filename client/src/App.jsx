@@ -97,7 +97,7 @@ function DareSwap() {
   if (dare) return <p className="dare">🎯 {T('dareInstead', { dare })}</p>;
   return (
     <button className="swap-btn" onClick={() => socket.emit('swapDare', {}, (d) => setDare(d))}>
-      <span className="swap-ico">🎲</span>{T('swap')}
+      {T('swap')}
     </button>
   );
 }
@@ -282,11 +282,14 @@ function Lobby({ state, me, isHost, leave }) {
       </div>
 
       <div className="maxrow">
-        <span className="muted">{T('players', { n: connected, max })}</span>
+        <span className="muted">{(() => {
+          const [pre, post] = T('players', { n: connected, max: '\u0000' }).split('\u0000');
+          return <>{pre}<AnimatedNumber value={max} />{post}</>;
+        })()}</span>
         {isHost && (
           <div className="stepper">
             <button onClick={() => socket.emit('setMax', { max: max - 1 })} disabled={max <= Math.max(2, connected)}>−</button>
-            <span>{T('maxLabel', { n: '' }).trim()} <AnimatedNumber value={max} /></span>
+            <span><AnimatedNumber value={max} /></span>
             <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= ceiling}>+</button>
           </div>
         )}
