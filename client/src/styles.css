@@ -415,3 +415,25 @@ body {
     corner-shape: squircle;
   }
 }
+
+/* 18+ age gate */
+.agegate { gap: 15px; position: relative; text-align: center; padding-top: 44px; }
+.agegate-lang { position: absolute; top: 18px; right: 18px; }
+.age-h1 { font-family: Anton, sans-serif; font-size: 34px; text-transform: uppercase; letter-spacing: 1px; color: var(--cream); line-height: 1.05; margin-top: 8px; }
+.age-body { color: var(--muted); font-size: 15px; line-height: 1.45; max-width: 440px; }
+.agegate .btn.primary, .agegate-leave { width: 100%; max-width: 440px; }
+.age-fine { font-size: 12px; max-width: 440px; line-height: 1.4; }
+
+/* legal footer links */
+.legal-footer { display: flex; gap: 8px; align-items: center; justify-content: center; margin-top: 6px; color: var(--muted); }
+.legal-footer button { background: none; border: none; color: var(--muted); font: inherit; font-size: 12px; text-decoration: underline; text-underline-offset: 2px; cursor: pointer; padding: 4px 2px; }
+.legal-footer span { opacity: 0.5; font-size: 12px; }
+
+/* legal modal (bottom sheet) */
+.legal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.72); display: flex; align-items: flex-end; justify-content: center; z-index: 100; -webkit-backdrop-filter: blur(4px); backdrop-filter: blur(4px); }
+.legal-sheet { position: relative; width: 100%; max-width: 560px; max-height: 86vh; overflow-y: auto; background: var(--card); border: 1px solid var(--line); border-radius: 22px 22px 0 0; padding: 26px 22px 44px; text-align: left; animation: rise 0.3s var(--ease) both; }
+.legal-close { position: absolute; top: 14px; right: 16px; background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; line-height: 1; }
+.legal-h2 { font-family: Anton, sans-serif; font-size: 28px; text-transform: uppercase; color: var(--cream); letter-spacing: 1px; padding-right: 30px; }
+.legal-updated { color: var(--muted); font-size: 12px; margin: 4px 0 16px; }
+.legal-p { color: var(--cream); font-size: 14px; line-height: 1.5; margin-bottom: 12px; opacity: 0.9; }
+.legal-disclaimer { color: var(--muted); font-size: 12px; font-style: italic; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }

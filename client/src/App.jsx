@@ -13,6 +13,44 @@ const MODES = [
 
 const LS = 'hotseat.session';
 const LS_LANG = 'hotseat.lang';
+const LS_AGE = 'hotseat.age';
+
+// Legal docs (English). Templates — have a lawyer review for your jurisdiction.
+const CONTACT = 'your-email@example.com'; // TODO: replace with a real contact address
+const LEGAL = {
+  updated: 'Last updated: November 2025',
+  terms: {
+    title: 'Terms of Use',
+    body: [
+      'HOT SEAT is a free social party game intended for adults of legal drinking age in their location (18+, or 21+ where that is the legal drinking age). By using it you confirm you meet that age.',
+      'The game may suggest drinking as a light-hearted forfeit. Drinking is never required: every round offers a non-drinking dare instead, and you can choose Sober mode. You play entirely at your own choice and risk.',
+      'Assumption of risk & limitation of liability: you are solely responsible for your own conduct and for deciding whether, what, and how much to drink. To the fullest extent permitted by law, the creators of HOT SEAT accept no liability for any injury, loss, or damage arising from use of the game, including anything related to alcohol consumption. Never drink and drive. Know your limit.',
+      'User content: players may submit their own questions. You are responsible for what you submit; do not submit unlawful, hateful, or offensive content. Submissions are filtered automatically but we do not guarantee moderation and are not responsible for user-generated content.',
+      'The game is provided "as is", without warranties of any kind. We may change or discontinue it at any time.',
+      'Questions: ' + CONTACT,
+    ],
+  },
+  privacy: {
+    title: 'Privacy Policy',
+    body: [
+      'We keep this simple because we collect almost nothing. There are no accounts and no sign-up.',
+      'What we handle: the display name you type and your in-game choices exist only in the server\'s memory for the life of a room, and are deleted shortly after the room empties. We do not store them in any database.',
+      'On your device: we use local storage only to remember your language, your age confirmation, and your current room code so you can reconnect after a refresh. This stays on your device; it is not tracking and is not shared.',
+      'We do not use advertising or analytics cookies, do not sell data, and do not knowingly collect data from anyone under legal drinking age.',
+      'Because we hold no personal records, there is nothing to export or delete on our side; clearing your browser storage removes everything kept on your device.',
+      'Contact: ' + CONTACT,
+    ],
+  },
+  responsible: {
+    title: 'Please drink responsibly',
+    body: [
+      'HOT SEAT is meant to be fun, not a reason to overdo it.',
+      'Never drink and drive, and never pressure anyone to drink. Drinking is always optional: take the non-drinking dare or switch to Sober mode any time.',
+      'Know your limit, stay hydrated, look out for your friends, and stop whenever you want.',
+      'If you or someone you\'re with needs help with alcohol, contact a local health service or helpline.',
+    ],
+  },
+};
 
 export default function App() {
   const [me, setMe] = useState(null);
@@ -22,6 +60,8 @@ export default function App() {
   const [secret, setSecret] = useState(null); // 'traitor' | 'crew' | null
   const [toast, setToast] = useState(null);
   const [lang, setLang] = useState(() => { try { return localStorage.getItem(LS_LANG) || 'en'; } catch { return 'en'; } });
+  const [ageOk, setAgeOk] = useState(() => { try { return localStorage.getItem(LS_AGE) === '1'; } catch { return false; } });
+  const confirmAge = () => { try { localStorage.setItem(LS_AGE, '1'); } catch { /* ignore */ } setAgeOk(true); };
 
   useEffect(() => {
     socket.on('joined', ({ code, playerId }) => {
@@ -75,7 +115,63 @@ export default function App() {
     content = <>{screen}{toast && <Toast t={toast} />}</>;
   }
 
-  return <LangCtx.Provider value={activeLang}>{content}</LangCtx.Provider>;
+  return (
+    <LangCtx.Provider value={activeLang}>
+      {ageOk ? content : <AgeGate onConfirm={confirmAge} lang={lang} setLang={pickLang} />}
+    </LangCtx.Provider>
+  );
+}
+
+// 18+ age gate — active confirmation before a drinking game, remembered per device.
+function AgeGate({ onConfirm, lang, setLang }) {
+  const T = useT();
+  const [legal, setLegal] = useState(null);
+  return (
+    <div className="screen center agegate">
+      <div className="agegate-lang">
+        <select className="lang-select" value={lang} onChange={(e) => setLang(e.target.value)} aria-label="Language">
+          {LANGS.map((l) => <option key={l.id} value={l.id}>{l.id.toUpperCase()}</option>)}
+        </select>
+      </div>
+      <Logo />
+      <h1 className="age-h1">{T('ageTitle')}</h1>
+      <p className="age-body">{T('ageBody')}</p>
+      <button className="btn primary" onClick={onConfirm}>{T('ageYes')}</button>
+      <a className="btn ghost agegate-leave" href="https://www.google.com">{T('ageNo')}</a>
+      <p className="muted age-fine">{T('ageFine')}</p>
+      <Footer onOpen={setLegal} />
+      {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
+    </div>
+  );
+}
+
+// Footer links to the legal docs; reused on the age gate and home.
+function Footer({ onOpen }) {
+  const T = useT();
+  return (
+    <div className="legal-footer">
+      <button onClick={() => onOpen('terms')}>{T('terms')}</button>
+      <span>·</span>
+      <button onClick={() => onOpen('privacy')}>{T('privacy')}</button>
+      <span>·</span>
+      <button onClick={() => onOpen('responsible')}>{T('responsible')}</button>
+    </div>
+  );
+}
+
+function LegalModal({ doc, onClose }) {
+  const T = useT();
+  return (
+    <div className="legal-overlay" onClick={onClose}>
+      <div className="legal-sheet" onClick={(e) => e.stopPropagation()}>
+        <button className="legal-close" onClick={onClose} aria-label="Close">✕</button>
+        <h2 className="legal-h2">{LEGAL[doc].title}</h2>
+        <p className="legal-updated">{LEGAL.updated}</p>
+        {LEGAL[doc].body.map((p, i) => <p key={i} className="legal-p">{p}</p>)}
+        <p className="legal-disclaimer">{T('legalDisclaimer')}</p>
+      </div>
+    </div>
+  );
 }
 
 // In-game top bar: mode emoji left, round centered, Leave right.
@@ -168,6 +264,7 @@ function Home({ setError, error, lang, setLang }) {
   const [tab, setTab] = useState(invited ? 'join' : 'start');
   const [name, setName] = useState('');
   const [mode, setMode] = useState('chill');
+  const [legal, setLegal] = useState(null);
   const [joinCode, setJoinCode] = useState((invited || '').toUpperCase().slice(0, 4));
 
   const create = () => {
@@ -226,6 +323,8 @@ function Home({ setError, error, lang, setLang }) {
 
       {error && <p className="error">{T('err.' + error)}</p>}
       <p className="fine">{T('fine18')}</p>
+      <Footer onOpen={setLegal} />
+      {legal && <LegalModal doc={legal} onClose={() => setLegal(null)} />}
     </div>
   );
 }
