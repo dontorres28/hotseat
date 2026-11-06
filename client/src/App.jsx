@@ -97,7 +97,7 @@ function DareSwap() {
   if (dare) return <p className="dare">🎯 {T('dareInstead', { dare })}</p>;
   return (
     <button className="swap-btn" onClick={() => socket.emit('swapDare', {}, (d) => setDare(d))}>
-      {T('swap')}
+      <span className="swap-ico">🎲</span>{T('swap')}
     </button>
   );
 }
