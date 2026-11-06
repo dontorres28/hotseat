@@ -511,7 +511,7 @@ function Recap({ recap, leave }) {
   return (
     <div className="screen">
       <div className="center" style={{ marginTop: 16 }}><Logo small /></div>
-      <p className="tagline">{T('damage', { rounds: recap.rounds })}</p>
+      <p className="tagline">{T(recap.rounds === 1 ? 'damageOne' : 'damage', { rounds: recap.rounds })}</p>
 
       <div className="awards">
         {recap.awards.map((a, i) => (
