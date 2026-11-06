@@ -291,6 +291,7 @@ body {
   border-radius: 18px; padding: 26px 20px; text-align: center;
   display: flex; flex-direction: column; align-items: center; gap: 12px;
   animation: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  perspective: 900px;
 }
 .verdict-hero.safe { background: #122018; border: 3px solid #2f7a50; }
 .verdict-hero.drink { background: #2a0e0b; border: 3px solid var(--red); box-shadow: 0 0 44px rgba(232, 53, 43, 0.3); }
@@ -302,16 +303,22 @@ body {
 .verdict-hero.safe .vh-big { color: #5fd597; }
 .verdict-hero .swap-btn { margin-top: 2px; }
 
-/* Flip card: the hot seat flips to reveal their challenge (a beat of suspense). */
-.flip { width: 100%; background: none; border: none; padding: 0; cursor: pointer; perspective: 900px; -webkit-tap-highlight-color: transparent; }
-.flip-inner { display: grid; transition: transform 0.55s var(--ease); transform-style: preserve-3d; }
-.flip.flipped .flip-inner { transform: rotateY(180deg); }
-.flip-face {
-  grid-area: 1 / 1; display: flex; align-items: center; justify-content: center; text-align: center;
-  padding: 15px 16px; border-radius: 14px; backface-visibility: hidden; -webkit-backface-visibility: hidden;
+/* Flip to reveal the challenge. The hint is a compact pill; the challenge
+   flips in at its own height, so neither state has dead space. */
+.flip-hint-btn {
+  width: 100%; background: rgba(0, 0, 0, 0.28); border: 1.5px dashed rgba(242, 233, 216, 0.35);
+  color: var(--muted); font: inherit; font-weight: 700; font-size: 12.5px; padding: 11px 14px;
+  border-radius: 14px; cursor: pointer; -webkit-tap-highlight-color: transparent;
+  transition: transform 140ms ease-out;
 }
-.flip-front { background: rgba(0, 0, 0, 0.28); border: 1.5px dashed rgba(242, 233, 216, 0.35); color: var(--muted); font-weight: 700; font-size: 12.5px; padding: 11px 14px; }
-.flip-back { background: rgba(0, 0, 0, 0.34); border: 1px solid rgba(232, 53, 43, 0.55); color: var(--cream); font-weight: 800; font-size: 18px; line-height: 1.3; transform: rotateY(180deg); }
+.flip-hint-btn:active { transform: scale(0.98); }
+.flip-reveal {
+  width: 100%; background: rgba(0, 0, 0, 0.34); border: 1px solid rgba(232, 53, 43, 0.55);
+  color: var(--cream); font-weight: 800; font-size: 18px; line-height: 1.3; padding: 15px 16px;
+  border-radius: 14px; text-align: center;
+  animation: flip-in 0.5s var(--ease) both; transform-origin: center;
+}
+@keyframes flip-in { from { transform: rotateY(-90deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
 
 /* Demoted vote bars (secondary info under the verdict) */
 .bars.small { opacity: 0.75; }
@@ -374,7 +381,7 @@ body {
 @supports (corner-shape: squircle) {
   .btn, .field, .code-in, .lang-select, .verdict-hero, .hotseat-card, .addq, .addq-input,
   .chip, .mode, .pack-row, .pick, .duel-pick, .tb-leave, .traitor-reveal, .exposed,
-  .wild-banner, .toast, .award, .bar-track, .flip-face, .stepper, .packs-toggle {
+  .wild-banner, .toast, .award, .bar-track, .flip-hint-btn, .flip-reveal, .stepper, .packs-toggle {
     corner-shape: squircle;
   }
 }

@@ -127,19 +127,17 @@ function Verdict({ drinker, sips, challenge }) {
   );
 }
 
-// The hot seat flips a card to reveal their challenge — a beat of suspense.
+// The hot seat flips to reveal their challenge — a beat of suspense. The hint
+// is a small pill; the challenge flips in at its own size (no empty box).
 function FlipChallenge({ challenge, flipped, setFlipped }) {
   const T = useT();
+  if (!flipped) {
+    return <button className="flip-hint-btn" onClick={() => setFlipped(true)}>🔄 {T('flipHint')}</button>;
+  }
   return (
     <>
-      <button className={'flip' + (flipped ? ' flipped' : '')} onClick={() => setFlipped(true)}
-        aria-label={T('flipHint')}>
-        <div className="flip-inner">
-          <div className="flip-face flip-front">🔄 {T('flipHint')}</div>
-          <div className="flip-face flip-back">{challenge}</div>
-        </div>
-      </button>
-      {flipped && <DareSwap />}
+      <div className="flip-reveal">{challenge}</div>
+      <DareSwap />
     </>
   );
 }
