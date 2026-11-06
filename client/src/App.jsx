@@ -108,8 +108,7 @@ function Verdict({ drinker, sips, challenge }) {
   }
   return (
     <div className="verdict-hero drink">
-      <div className="vh-emoji">{challenge ? '🔥🍺' : '🍺'.repeat(Math.min(sips, 3))}</div>
-      <div className="vh-big">{T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
+      <div className="vh-big">🍺 {T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
       {challenge && <p className="vh-sub">{challenge}</p>}
       <DareSwap />
     </div>
