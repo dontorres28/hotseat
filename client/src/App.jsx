@@ -105,6 +105,7 @@ function DareSwap() {
 // The one thing a tipsy player must get instantly: drink (how much) or safe.
 function Verdict({ drinker, sips, challenge }) {
   const T = useT();
+  const [flipped, setFlipped] = useState(false);
   if (!drinker) {
     return (
       <div className="verdict-hero safe">
@@ -115,16 +116,20 @@ function Verdict({ drinker, sips, challenge }) {
   }
   return (
     <div className="verdict-hero drink">
-      <div className="vh-big">🍺 {T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
-      {challenge ? <FlipChallenge challenge={challenge} /> : <DareSwap />}
+      {/* Once flipped, drop the big DRINK so the challenge gets the room. */}
+      {!(challenge && flipped) && (
+        <div className="vh-big">🍺 {T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
+      )}
+      {challenge
+        ? <FlipChallenge challenge={challenge} flipped={flipped} setFlipped={setFlipped} />
+        : <DareSwap />}
     </div>
   );
 }
 
 // The hot seat flips a card to reveal their challenge — a beat of suspense.
-function FlipChallenge({ challenge }) {
+function FlipChallenge({ challenge, flipped, setFlipped }) {
   const T = useT();
-  const [flipped, setFlipped] = useState(false);
   return (
     <>
       <button className={'flip' + (flipped ? ' flipped' : '')} onClick={() => setFlipped(true)}
