@@ -3,7 +3,7 @@
 // ponytail: in-memory single-process store; move rooms to Redis only if you run
 // more than one server instance.
 
-import { promptsForMode, shuffled, CONSENT_MODES, packExists, packPrompts, packCatalog as catalogFor, wildcardList, challengeEntries, dareEntries, awards as awardStrings, topicsList, validatePrompt } from './content.js';
+import { promptsForMode, shuffled, CONSENT_MODES, packExists, packPrompts, packCatalog as catalogFor, wildcardList, challengeEntries, dareEntries, duoEntries, awards as awardStrings, topicsList, validatePrompt } from './content.js';
 
 export function randomDare(room) {
   const n = room ? connectedCount(room) : 20;
@@ -240,6 +240,18 @@ function drawChallenge(room) {
   return pick.text;
 }
 
+// Duo challenge: a two-person challenge that pulls in a partner.
+function drawDuo(room) {
+  const list = duoEntries(room.lang);
+  room.usedDuos = room.usedDuos || new Set();
+  const fresh = list.filter((d) => !room.usedDuos.has(d.i));
+  const from = fresh.length ? fresh : list;
+  const pick = from[Math.floor(Math.random() * from.length)];
+  room.usedDuos.add(pick.i);
+  if (room.usedDuos.size >= list.length) room.usedDuos.clear();
+  return pick.text;
+}
+
 // Duel: two players face off, the room votes who's more likely, that player drinks.
 function revealDuel(room) {
   const players = activePlayers(room);
@@ -330,8 +342,20 @@ export function reveal(room) {
   // Traitor reward: a win is a token too.
   if (traitorWon) { const t = room.players.get(tId); if (t) { t.tokens += 1; t.traitorWins += 1; } }
 
-  // The hot seat always takes the heat, with a challenge.
-  const challenge = drawChallenge(room);
+  // The hot seat always takes the heat, with a challenge. Sometimes (3+ players)
+  // the challenge pulls in a random second player, who drinks too.
+  const bystanders = players.filter((p) => p.id !== targetId);
+  let partnerId = null, challenge;
+  if (bystanders.length >= 2 && Math.random() < 0.25) {
+    partnerId = bystanders[Math.floor(Math.random() * bystanders.length)].id;
+    challenge = drawDuo(room);
+    const partner = room.players.get(partnerId);
+    if (partner) partner.sips += 1;
+    const pr = results.find((r) => r.id === partnerId); // reflect the sip in the partner's own result
+    if (pr) pr.sips += 1;
+  } else {
+    challenge = drawChallenge(room);
+  }
   if (target) target.sips += 1;
 
   // The Exposed Card: once a game (from round 3+), reveal who voted for whom.
@@ -356,6 +380,8 @@ export function reveal(room) {
     targetId,
     targetName: target?.name,
     challenge,
+    partnerId,
+    partnerName: partnerId ? room.players.get(partnerId)?.name : null,
     results,
     revengeTo: mostPicked?.name,
     traitor: tId ? { name: room.players.get(tId)?.name, won: traitorWon } : null,

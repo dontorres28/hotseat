@@ -71,6 +71,10 @@ export function dareEntries(lang) {
   return L(lang).dares.map((text, i) => ({ text, min: DARE_MIN[i] }));
 }
 
+export function duoEntries(lang) {
+  return (L(lang).duos || EN.duos).map((text, i) => ({ i, text }));
+}
+
 export function awards(lang) { return L(lang).awards; }
 
 export function topicsList(lang) { return L(lang).topics || EN.topics; }

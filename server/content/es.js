@@ -348,4 +348,16 @@ export default {
     "Salidas nocturnas", "El dinero", "El futuro", "La comida", "Los viajes",
     "Talentos ocultos", "Malos hábitos", "Supervivencia", "La fama", "Amores y flechazos",
   ],
+  duos: [
+    "Hagan 5 burpees juntos. Ambos toman 5 tragos.",
+    "Pulseada. El que pierde toma 4 tragos.",
+    "Duelo de miradas hasta la próxima revelación. El primero que ríe toma doble.",
+    "Guerra de pulgares, al mejor de tres. El que pierde toma 3 tragos.",
+    "Ambos hagan su mejor paso de baile. El grupo elige el peor para tomar.",
+    "Piedra, papel o tijera. El que pierde toma 3 tragos.",
+    "Hagan una plancha juntos. El primero que cae se toma todo su vaso.",
+    "Hablen con acento hasta la próxima revelación, o 2 tragos cada uno.",
+    "Cambien de lugar y tomen 2 tragos cada uno.",
+    "Enganchen los meñiques y ambos tomen 3 tragos.",
+  ],
 };

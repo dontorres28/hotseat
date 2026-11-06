@@ -349,4 +349,17 @@ export default {
     "Nights out", "Money", "The future", "Food", "Travel",
     "Secret talents", "Bad habits", "Survival", "Fame", "Love & crushes",
   ],
+  // Duo challenges: pull a second player into the Hot Seat. Both do it.
+  duos: [
+    "Do 5 burpees together. Both take 5 sips.",
+    "Arm wrestle. The loser takes 4 sips.",
+    "Stare-off until the next reveal. First to laugh drinks twice.",
+    "Thumb war, best of three. The loser takes 3 sips.",
+    "Both do your best dance move. The group picks the worse one to drink.",
+    "Rock-paper-scissors. The loser takes 3 sips.",
+    "Hold a plank together. First to drop chugs their drink.",
+    "Speak in an accent until the next reveal, or 2 sips each.",
+    "Swap seats and take 2 sips each.",
+    "Link pinkies and both take 3 sips.",
+  ],
 };

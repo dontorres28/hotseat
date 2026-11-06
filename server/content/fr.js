@@ -348,4 +348,16 @@ export default {
     "Les soirées", "L'argent", "Le futur", "La bouffe", "Les voyages",
     "Talents cachés", "Mauvaises habitudes", "La survie", "La célébrité", "Amours et béguins",
   ],
+  duos: [
+    "Faites 5 burpees ensemble. Chacun prend 5 gorgées.",
+    "Bras de fer. Le perdant prend 4 gorgées.",
+    "Concours de regard jusqu'à la prochaine révélation. Le premier qui rit boit double.",
+    "Bataille de pouces, au meilleur des trois. Le perdant prend 3 gorgées.",
+    "Faites chacun votre meilleur pas de danse. Le groupe choisit le pire pour boire.",
+    "Pierre, feuille, ciseaux. Le perdant prend 3 gorgées.",
+    "Tenez la planche ensemble. Le premier qui lâche fait cul sec.",
+    "Parlez avec un accent jusqu'à la prochaine révélation, ou 2 gorgées chacun.",
+    "Changez de place et prenez 2 gorgées chacun.",
+    "Accrochez les petits doigts et prenez 3 gorgées chacun.",
+  ],
 };

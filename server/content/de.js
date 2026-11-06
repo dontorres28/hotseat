@@ -348,4 +348,16 @@ export default {
     "Partynächte", "Geld", "Die Zukunft", "Essen", "Reisen",
     "Versteckte Talente", "Schlechte Angewohnheiten", "Überleben", "Ruhm", "Liebe & Schwärmereien",
   ],
+  duos: [
+    "Macht zusammen 5 Burpees. Beide nehmen 5 Schlucke.",
+    "Armdrücken. Der Verlierer nimmt 4 Schlucke.",
+    "Anstarren bis zur nächsten Auflösung. Wer zuerst lacht, trinkt doppelt.",
+    "Daumenhakeln, best of three. Der Verlierer nimmt 3 Schlucke.",
+    "Beide zeigen euren besten Tanzmove. Die Gruppe wählt den schlechteren zum Trinken.",
+    "Schere, Stein, Papier. Der Verlierer nimmt 3 Schlucke.",
+    "Haltet zusammen einen Plank. Wer zuerst aufgibt, ext sein Getränk.",
+    "Sprecht bis zur nächsten Auflösung mit Akzent, oder je 2 Schlucke.",
+    "Tauscht die Plätze und nehmt je 2 Schlucke.",
+    "Hakt die kleinen Finger ein und nehmt beide 3 Schlucke.",
+  ],
 };

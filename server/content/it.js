@@ -348,4 +348,16 @@ export default {
     "Serate fuori", "I soldi", "Il futuro", "Il cibo", "I viaggi",
     "Talenti nascosti", "Brutte abitudini", "Sopravvivenza", "La fama", "Amori e cotte",
   ],
+  duos: [
+    "Fate 5 burpees insieme. Entrambi bevete 5 sorsi.",
+    "Braccio di ferro. Chi perde beve 4 sorsi.",
+    "Sfida di sguardi fino alla prossima rivelazione. Il primo che ride beve doppio.",
+    "Lotta di pollici, al meglio di tre. Chi perde beve 3 sorsi.",
+    "Fate entrambi la vostra miglior mossa di ballo. Il gruppo sceglie la peggiore per bere.",
+    "Carta, sasso, forbice. Chi perde beve 3 sorsi.",
+    "Tenete il plank insieme. Il primo che cede scola il bicchiere.",
+    "Parlate con un accento fino alla prossima rivelazione, o 2 sorsi ciascuno.",
+    "Cambiate posto e bevete 2 sorsi ciascuno.",
+    "Agganciate i mignoli ed entrambi bevete 3 sorsi.",
+  ],
 };

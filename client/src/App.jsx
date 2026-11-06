@@ -535,10 +535,11 @@ function Reveal({ state, me, isHost, leave }) {
       <div className="hotseat-card">
         <p className="muted">{T('hotSeat')}</p>
         <div className="hotseat-name">{r.targetName} 🔥</div>
+        {r.partnerName && <div className="partner-line">🤝 {T('partnerJoins', { name: r.partnerName })}</div>}
       </div>
 
       <Verdict drinker={youAreHotSeat || !!mine?.sips} sips={youAreHotSeat ? 1 : (mine?.sips || 0)}
-        challenge={youAreHotSeat ? r.challenge : null} />
+        challenge={(youAreHotSeat || r.partnerId === me) ? r.challenge : null} />
 
       <div className="bars small">
         {r.breakdown.map((b, i) => (

@@ -13,6 +13,7 @@ for (const [lang, T] of [['de', DE], ['es', ES], ['fr', FR], ['it', IT]]) {
   assert.equal(EN.challenges.length, T.challenges.length, `${lang} challenge counts aligned`);
   assert.equal(EN.dares.length, T.dares.length, `${lang} dare counts aligned`);
   assert.equal(EN.topics.length, T.topics.length, `${lang} topic counts aligned`);
+  assert.equal(EN.duos.length, T.duos.length, `${lang} duo counts aligned`);
   assert.equal(EN.wildcards.length, T.wildcards.length, `${lang} wildcard counts aligned`);
   for (const m of ['chill', 'roast', 'spicy']) {
     assert.equal(EN.prompts[m].length, T.prompts[m].length, `${lang} prompt count aligned: ${m}`);
@@ -290,6 +291,24 @@ function room4(mode = 'chill') {
   // Can't add once the game has started.
   game.dealPrompt(r);
   assert.equal(game.setCustomPrompt(r, ana.id, 'Who would win a staring contest?').error, 'closed', 'closed after start');
+}
+
+// Duo challenge: pulls in a partner (not the hot seat) who also drinks.
+{
+  const r = game.createRoom('chill', 'en');
+  const [ana, ben, cy, dee] = ['Ana', 'Ben', 'Cy', 'Dee'].map((n) => game.addPlayer(r, n));
+  game.dealPrompt(r);
+  r.traitorId = null;
+  const orig = Math.random; Math.random = () => 0; // force the duo roll + deterministic picks
+  try {
+    game.submit(r, ana.id, ben.id); game.submit(r, ben.id, cy.id);
+    game.submit(r, cy.id, ben.id); game.submit(r, dee.id, ben.id);
+    const rev = game.reveal(r);
+    assert.equal(rev.targetName, 'Ben', 'Ben is the hot seat');
+    assert.ok(rev.partnerName && rev.partnerName !== 'Ben', 'a partner (not the hot seat) is pulled in');
+    const pr = rev.results.find((x) => x.name === rev.partnerName);
+    assert.ok(pr && pr.sips >= 1, 'the partner drinks too');
+  } finally { Math.random = orig; }
 }
 
 console.log('ok — all game checks passed');
