@@ -225,6 +225,15 @@ function room4(mode = 'chill') {
   assert.equal(game.roomFull(r), true, '5 of 5 is full');
 }
 
+// Host-chosen round count clamps to [3, 20].
+{
+  const r = game.createRoom('chill');
+  assert.equal(r.totalRounds, 10, 'default 10 rounds');
+  assert.equal(game.setRounds(r, 1), 3, 'floor at 3');
+  assert.equal(game.setRounds(r, 99), 20, 'cap at 20');
+  assert.equal(game.setRounds(r, 7), 7, 'set to 7');
+}
+
 // Duel caps at 4 automatically.
 {
   const r = game.createRoom('duel');

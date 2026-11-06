@@ -114,6 +114,13 @@ io.on('connection', (socket) => {
     game.setMax(room, max); broadcast(room);
   });
 
+  socket.on('setRounds', ({ rounds }) => {
+    if (!bound) return;
+    const room = game.getRoom(bound.code);
+    if (!room || room.hostId !== bound.playerId || room.phase !== 'lobby') return;
+    game.setRounds(room, rounds); broadcast(room);
+  });
+
   socket.on('submit', ({ voteFor, predict }) => {
     if (!bound) return;
     const room = game.getRoom(bound.code);

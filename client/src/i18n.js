@@ -50,7 +50,7 @@ const S = {
     endGame: 'End game', nextRound: 'Next round →', waitingHostShort: 'Waiting for the host…',
     damage: "{rounds} rounds. Here's the damage.", damageOne: "{rounds} round. Here's the damage.", colPlayer: 'Player', colReads: 'Reads',
     newGame: 'New game', screenshot: 'Screenshot it. Settle it later.', loading: 'loading…',
-    language: 'Language', nobody: 'nobody',
+    language: 'Language', nobody: 'nobody', roundsLabel: 'Rounds', seeResults: 'See results',
   },
   de: {
     tagline: 'Nicht antworten. Errate deine Freunde.',
@@ -91,7 +91,7 @@ const S = {
     endGame: 'Spiel beenden', nextRound: 'Nächste Runde →', waitingHostShort: 'Warte auf den Host…',
     damage: '{rounds} Runden. Hier ist der Schaden.', damageOne: '{rounds} Runde. Hier ist der Schaden.', colPlayer: 'Spieler', colReads: 'Treffer',
     newGame: 'Neues Spiel', screenshot: 'Mach einen Screenshot. Klärt es später.', loading: 'lädt…',
-    language: 'Sprache', nobody: 'niemand',
+    language: 'Sprache', nobody: 'niemand', roundsLabel: 'Runden', seeResults: 'Ergebnisse ansehen',
   },
   es: {
     tagline: 'No respondas. Adivina a tus amigos.',
@@ -132,7 +132,7 @@ const S = {
     endGame: 'Terminar la partida', nextRound: 'Siguiente ronda →', waitingHostShort: 'Esperando al anfitrión…',
     damage: '{rounds} rondas. Aquí están los daños.', damageOne: '{rounds} ronda. Aquí están los daños.', colPlayer: 'Jugador', colReads: 'Aciertos',
     newGame: 'Nueva partida', screenshot: 'Haz una captura. Arreglen cuentas después.', loading: 'cargando…',
-    language: 'Idioma', nobody: 'nadie',
+    language: 'Idioma', nobody: 'nadie', roundsLabel: 'Rondas', seeResults: 'Ver resultados',
   },
   fr: {
     tagline: 'Ne réponds pas. Devine tes amis.',
@@ -173,7 +173,7 @@ const S = {
     endGame: 'Terminer la partie', nextRound: 'Tour suivant →', waitingHostShort: "En attente de l'hôte…",
     damage: '{rounds} tours. Voici les dégâts.', damageOne: '{rounds} tour. Voici les dégâts.', colPlayer: 'Joueur', colReads: 'Lectures',
     newGame: 'Nouvelle partie', screenshot: 'Fais une capture. Réglez ça plus tard.', loading: 'chargement…',
-    language: 'Langue', nobody: 'personne',
+    language: 'Langue', nobody: 'personne', roundsLabel: 'Tours', seeResults: 'Voir les résultats',
   },
   it: {
     tagline: 'Non rispondere. Indovina i tuoi amici.',
@@ -214,7 +214,7 @@ const S = {
     endGame: 'Termina la partita', nextRound: 'Prossimo round →', waitingHostShort: "In attesa dell'host…",
     damage: '{rounds} round. Ecco i danni.', damageOne: '{rounds} round. Ecco i danni.', colPlayer: 'Giocatore', colReads: 'Letture',
     newGame: 'Nuova partita', screenshot: 'Fai uno screenshot. Fate i conti dopo.', loading: 'caricamento…',
-    language: 'Lingua', nobody: 'nessuno',
+    language: 'Lingua', nobody: 'nessuno', roundsLabel: 'Round', seeResults: 'Vedi i risultati',
   },
 };
 

@@ -44,6 +44,7 @@ export function createRoom(mode, lang = 'en') {
     deck: shuffled(promptsForMode(mode, lang)),
     deckIndex: 0,
     maxPlayers: mode === 'duel' ? 4 : 20, // duel is a 2-4 mode; everything else opens to 20
+    totalRounds: 10, // host-chosen game length (3-20)
     enabledPacks: new Set(), // packs switched on for this room
     prompt: null,
     wildcard: null,
@@ -123,6 +124,13 @@ export function allConsented(room) {
 const MIN_PLAYERS = 2;        // minimum to start a game
 export const MIN_MAX = 2;     // smallest cap a host can set
 export const MAX_MAX = 20;    // largest cap
+export const MIN_ROUNDS = 3;  // host-chosen game length
+export const MAX_ROUNDS = 20;
+
+export function setRounds(room, n) {
+  room.totalRounds = Math.min(MAX_ROUNDS, Math.max(MIN_ROUNDS, Math.floor(Number(n)) || room.totalRounds));
+  return room.totalRounds;
+}
 
 export function connectedCount(room) {
   return [...room.players.values()].filter((p) => p.connected).length;
@@ -382,6 +390,7 @@ export function snapshot(room) {
     hostId: room.hostId,
     needsConsent: CONSENT_MODES.includes(room.mode),
     maxPlayers: room.maxPlayers,
+    totalRounds: room.totalRounds,
     packs: packCatalog(room),
     players: [...room.players.values()].map((p) => ({
       id: p.id, name: p.name, connected: p.connected, consented: p.consented, tokens: p.tokens,

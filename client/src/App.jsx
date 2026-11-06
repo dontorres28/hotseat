@@ -194,6 +194,7 @@ function Lobby({ state, me, isHost, leave }) {
   const enough = connected >= 2;
   const max = state.maxPlayers ?? 20;
   const ceiling = state.duel ? 4 : 20;
+  const totalRounds = state.totalRounds ?? 10;
 
   const share = async () => {
     const url = `${window.location.origin}/?c=${state.code}`;
@@ -232,6 +233,17 @@ function Lobby({ state, me, isHost, leave }) {
             <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= ceiling}>+</button>
           </div>
         )}
+      </div>
+
+      <div className="maxrow">
+        <span className="muted">{T('roundsLabel')}</span>
+        {isHost ? (
+          <div className="stepper">
+            <button onClick={() => socket.emit('setRounds', { rounds: totalRounds - 1 })} disabled={totalRounds <= 3}>−</button>
+            <span>{totalRounds}</span>
+            <button onClick={() => socket.emit('setRounds', { rounds: totalRounds + 1 })} disabled={totalRounds >= 20}>+</button>
+          </div>
+        ) : <span className="muted">{totalRounds}</span>}
       </div>
 
       <Packs packs={state.packs || []} isHost={isHost} />
@@ -306,7 +318,7 @@ function DuelRound({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: state.round })}</span><span className="wild">⚔️ {T('duel')}</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: state.round })} <span className="muted">/ {state.totalRounds}</span></span><span className="wild">⚔️ {T('duel')}</span></div>
       <h2 className="prompt">{state.prompt}</h2>
       <p className="label">{T('tapMoreLikely')}</p>
       <div className="duel">
@@ -329,7 +341,7 @@ function DuelReveal({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: r.round })}</span><span className="wild">⚔️ {T('duel')}</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: r.round })} <span className="muted">/ {state.totalRounds}</span></span><span className="wild">⚔️ {T('duel')}</span></div>
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
@@ -355,7 +367,9 @@ function DuelReveal({ state, me, isHost }) {
       {isHost ? (
         <div className="row">
           <button className="btn ghost" onClick={() => socket.emit('end')}>{T('endGame')}</button>
-          <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>
+          {r.round >= (state.totalRounds || 0)
+            ? <button className="btn primary" onClick={() => socket.emit('end')}>{T('seeResults')}</button>
+            : <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>}
         </div>
       ) : (
         <p className="muted center">{T('waitingHostShort')}</p>
@@ -391,7 +405,7 @@ function Round({ state, me, isHost, secret }) {
   return (
     <div className="screen">
       <div className="round-head">
-        <span className="round-n">{T('round', { n: state.round })}</span>
+        <span className="round-n">{T('round', { n: state.round })} <span className="muted">/ {state.totalRounds}</span></span>
         {state.wildcard && <span className="wild">{T('wildcard')}</span>}
       </div>
       {state.wildcard && <div className="wild-banner">⚡ {state.wildcard.label}</div>}
@@ -435,7 +449,7 @@ function Reveal({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: r.round })}</span></div>
+      <div className="round-head"><span className="round-n">{T('round', { n: r.round })} <span className="muted">/ {state.totalRounds}</span></span></div>
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
@@ -497,7 +511,9 @@ function Reveal({ state, me, isHost }) {
       {isHost ? (
         <div className="row">
           <button className="btn ghost" onClick={() => socket.emit('end')}>{T('endGame')}</button>
-          <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>
+          {r.round >= (state.totalRounds || 0)
+            ? <button className="btn primary" onClick={() => socket.emit('end')}>{T('seeResults')}</button>
+            : <button className="btn primary" onClick={() => socket.emit('next')}>{T('nextRound')}</button>}
         </div>
       ) : (
         <p className="muted center">{T('waitingHostShort')}</p>
