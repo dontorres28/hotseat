@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { socket } from './socket.js';
 import { LangCtx, useT, LANGS } from './i18n.js';
 
@@ -229,6 +229,18 @@ function Home({ setError, error, lang, setLang }) {
   );
 }
 
+// A number that flips/rolls to its new value when it changes (up vs down).
+function AnimatedNumber({ value }) {
+  const prev = useRef(value);
+  const dir = value > prev.current ? 'up' : value < prev.current ? 'down' : '';
+  useEffect(() => { prev.current = value; }, [value]);
+  return (
+    <span className="num-roll">
+      <span key={value} className={'num-digit' + (dir ? ' ' + dir : '')}>{value}</span>
+    </span>
+  );
+}
+
 function Lobby({ state, me, isHost, leave }) {
   const T = useT();
   const [copied, setCopied] = useState(false);
@@ -274,7 +286,7 @@ function Lobby({ state, me, isHost, leave }) {
         {isHost && (
           <div className="stepper">
             <button onClick={() => socket.emit('setMax', { max: max - 1 })} disabled={max <= Math.max(2, connected)}>−</button>
-            <span>{T('maxLabel', { n: max })}</span>
+            <span>{T('maxLabel', { n: '' }).trim()} <AnimatedNumber value={max} /></span>
             <button onClick={() => socket.emit('setMax', { max: max + 1 })} disabled={max >= ceiling}>+</button>
           </div>
         )}
@@ -285,7 +297,7 @@ function Lobby({ state, me, isHost, leave }) {
         {isHost ? (
           <div className="stepper">
             <button onClick={() => socket.emit('setRounds', { rounds: totalRounds - 1 })} disabled={totalRounds <= 3}>−</button>
-            <span>{totalRounds}</span>
+            <span><AnimatedNumber value={totalRounds} /></span>
             <button onClick={() => socket.emit('setRounds', { rounds: totalRounds + 1 })} disabled={totalRounds >= 20}>+</button>
           </div>
         ) : <span className="muted">{totalRounds}</span>}

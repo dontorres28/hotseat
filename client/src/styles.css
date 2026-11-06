@@ -227,6 +227,13 @@ body {
 .stepper button:active { transform: scale(0.92); }
 .stepper button:disabled { opacity: 0.35; }
 .stepper > span { min-width: 64px; text-align: center; font-weight: 700; font-size: 14px; }
+/* Rolling number: the digit flips to its new value (up when it grows, down when it shrinks). */
+.num-roll { display: inline-block; overflow: hidden; vertical-align: bottom; line-height: 1.15; perspective: 220px; }
+.num-digit { display: inline-block; }
+.num-digit.up { animation: num-up 0.26s cubic-bezier(0.2, 0.9, 0.26, 1) both; }
+.num-digit.down { animation: num-down 0.26s cubic-bezier(0.2, 0.9, 0.26, 1) both; }
+@keyframes num-up { 0% { transform: translateY(95%) rotateX(-60deg); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; opacity: 1; } }
+@keyframes num-down { 0% { transform: translateY(-95%) rotateX(60deg); opacity: 0; } 55% { opacity: 1; } 100% { transform: none; opacity: 1; } }
 
 /* --- Prompt packs --- */
 .packs { display: flex; flex-direction: column; gap: 8px; }
