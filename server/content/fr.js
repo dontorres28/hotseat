@@ -17,6 +17,7 @@ export default {
       "Qui survivrait le plus longtemps à une apocalypse zombie ?",
       "Qui a le plus de chances de monter une entreprise qui marche ?",
       "Qui explique le plus mal le chemin ?",
+      "Qui serait le plus susceptible de porter une écharpe rose ?",
     ],
     roast: [
       "Qui a le plus de chances d'écrire à son ex ce soir ?",

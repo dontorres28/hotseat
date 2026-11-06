@@ -17,6 +17,7 @@ export default {
       "¿Quién sobreviviría más tiempo a un apocalipsis zombi?",
       "¿Quién es más probable que monte un negocio exitoso?",
       "¿Quién explica peor cómo llegar a un lugar?",
+      "¿Quién es más probable que lleve una bufanda rosa?",
     ],
     roast: [
       "¿Quién es más probable que le escriba a su ex esta noche?",

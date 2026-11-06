@@ -17,6 +17,7 @@ export default {
       "Who would survive a zombie apocalypse the longest?",
       "Who's most likely to start a successful business?",
       "Who gives the worst directions?",
+      "Who's most likely to wear a pink scarf?",
     ],
     roast: [
       "Who's most likely to text their ex tonight?",

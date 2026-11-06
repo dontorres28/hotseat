@@ -17,6 +17,7 @@ export default {
       "Chi sopravviverebbe più a lungo a un'apocalisse zombie?",
       "Chi è più probabile che avvii un'attività di successo?",
       "Chi spiega peggio la strada?",
+      "Chi è più probabile che indossi una sciarpa rosa?",
     ],
     roast: [
       "Chi è più probabile che scriva al suo ex stasera?",
