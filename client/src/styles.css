@@ -82,15 +82,17 @@ body {
 
 .tab-body { display: flex; flex-direction: column; gap: 16px; animation: rise-item 0.28s var(--ease) backwards; }
 
-/* Language picker */
-.lang-row { display: flex; gap: 6px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
-.lang-btn {
-  background: var(--card); border: 2px solid var(--line); color: var(--muted);
-  font: inherit; font-weight: 700; font-size: 12px; padding: 6px 12px; border-radius: 999px;
-  transition: transform 0.08s ease, border-color 0.15s ease, color 0.15s ease;
+/* Language dropdown — compact, right-aligned, shows the acronym */
+.lang-select-wrap { display: flex; justify-content: flex-end; margin-bottom: -4px; }
+.lang-select {
+  appearance: none; -webkit-appearance: none;
+  background: var(--card); border: 2px solid var(--line); color: var(--cream);
+  font: inherit; font-weight: 700; font-size: 13px; letter-spacing: 0.5px;
+  padding: 6px 28px 6px 12px; border-radius: 999px; cursor: pointer;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%238a857c' stroke-width='2'><path d='M1 1l4 4 4-4'/></svg>");
+  background-repeat: no-repeat; background-position: right 11px center;
 }
-.lang-btn:active { transform: scale(0.95); }
-.lang-btn.on { border-color: var(--red); color: var(--cream); }
+.lang-select:focus { outline: none; border-color: var(--red); }
 
 /* Segmented control with a sliding indicator (Apple-style). */
 .seg {

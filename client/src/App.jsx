@@ -134,12 +134,10 @@ function Home({ setError, error, lang, setLang }) {
 
   return (
     <div className="screen">
-      <div className="lang-row">
-        {LANGS.map((l) => (
-          <button key={l.id} className={'lang-btn' + (lang === l.id ? ' on' : '')} onClick={() => setLang(l.id)}>
-            {l.flag} {l.label}
-          </button>
-        ))}
+      <div className="lang-select-wrap">
+        <select className="lang-select" value={lang} onChange={(e) => setLang(e.target.value)} aria-label={T('language')}>
+          {LANGS.map((l) => <option key={l.id} value={l.id}>{l.id.toUpperCase()}</option>)}
+        </select>
       </div>
       <div className="center"><Logo /></div>
       <p className="tagline">{T('tagline')}</p>
