@@ -231,6 +231,12 @@ export function everyoneSubmitted(room) {
 
 function drawChallenge(room) {
   const n = connectedCount(room);
+  // Sober mode: penalties are non-drinking dares, never sip challenges.
+  if (room.mode === 'sober') {
+    const fit = dareEntries(room.lang).filter((d) => d.min <= n);
+    const pool = fit.length ? fit : dareEntries(room.lang);
+    return pool[Math.floor(Math.random() * pool.length)].text;
+  }
   const fit = challengeEntries(room.lang).filter((c) => c.min <= n); // ones that make sense for this group size
   const fresh = fit.filter((c) => !room.usedChallenges.has(c.i));
   const from = fresh.length ? fresh : fit;
@@ -346,7 +352,7 @@ export function reveal(room) {
   // the challenge pulls in a random second player, who drinks too.
   const bystanders = players.filter((p) => p.id !== targetId);
   let partnerId = null, challenge;
-  if (bystanders.length >= 2 && Math.random() < 0.25) {
+  if (room.mode !== 'sober' && bystanders.length >= 2 && Math.random() < (room.duoChance ?? 0.25)) {
     partnerId = bystanders[Math.floor(Math.random() * bystanders.length)].id;
     challenge = drawDuo(room);
     const partner = room.players.get(partnerId);

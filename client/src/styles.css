@@ -307,6 +307,7 @@ body {
 }
 .verdict-hero.safe { background: #122018; border: 3px solid #2f7a50; }
 .verdict-hero.drink { background: #2a0e0b; border: 3px solid var(--red); box-shadow: 0 0 44px rgba(232, 53, 43, 0.3); }
+.verdict-hero.dare { background: #251506; border: 3px solid #e8902b; box-shadow: 0 0 44px rgba(232, 144, 43, 0.3); }
 .vh-emoji { font-size: 48px; line-height: 1; }
 .vh-big {
   font-family: Anton, sans-serif; font-size: 48px; line-height: 0.9; letter-spacing: 1px;

@@ -8,6 +8,7 @@ const MODES = [
   { id: 'spicy', emoji: '🌶️' },
   { id: 'chaos', emoji: '🎲' },
   { id: 'duel', emoji: '⚔️' },
+  { id: 'sober', emoji: '🧃' },
 ];
 
 const LS = 'hotseat.session';
@@ -103,7 +104,7 @@ function DareSwap() {
 }
 
 // The one thing a tipsy player must get instantly: drink (how much) or safe.
-function Verdict({ drinker, sips, challenge }) {
+function Verdict({ drinker, sips, challenge, sober }) {
   const T = useT();
   const [flipped, setFlipped] = useState(false);
   if (!drinker) {
@@ -115,21 +116,21 @@ function Verdict({ drinker, sips, challenge }) {
     );
   }
   return (
-    <div className="verdict-hero drink">
-      {/* Once flipped, drop the big DRINK so the challenge gets the room. */}
+    <div className={'verdict-hero ' + (sober ? 'dare' : 'drink')}>
+      {/* Once flipped, drop the big word so the challenge gets the room. */}
       {!(challenge && flipped) && (
-        <div className="vh-big">🍺 {T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
+        <div className="vh-big">{sober ? '🎯' : '🍺'} {sober ? T('dareBig') : T('drinkBig')}{!challenge && !sober && sips > 1 ? ` ${sips}` : ''}</div>
       )}
       {challenge
-        ? <FlipChallenge challenge={challenge} flipped={flipped} setFlipped={setFlipped} />
-        : <DareSwap />}
+        ? <FlipChallenge challenge={challenge} flipped={flipped} setFlipped={setFlipped} sober={sober} />
+        : (sober ? null : <DareSwap />)}
     </div>
   );
 }
 
 // The hot seat flips to reveal their challenge — a beat of suspense. The hint
 // is a small pill; the challenge flips in at its own size (no empty box).
-function FlipChallenge({ challenge, flipped, setFlipped }) {
+function FlipChallenge({ challenge, flipped, setFlipped, sober }) {
   const T = useT();
   if (!flipped) {
     return <button className="flip-hint-btn" onClick={() => setFlipped(true)}>🔄 {T('flipHint')}</button>;
@@ -137,7 +138,7 @@ function FlipChallenge({ challenge, flipped, setFlipped }) {
   return (
     <>
       <div className="flip-reveal">{challenge}</div>
-      <DareSwap />
+      {!sober && <DareSwap />}
     </>
   );
 }
@@ -552,8 +553,8 @@ function Reveal({ state, me, isHost, leave }) {
         {r.partnerName && <div className="partner-line">🤝 {T('partnerJoins', { name: r.partnerName })}</div>}
       </div>
 
-      <Verdict drinker={youAreHotSeat || !!mine?.sips} sips={youAreHotSeat ? 1 : (mine?.sips || 0)}
-        challenge={(youAreHotSeat || r.partnerId === me) ? r.challenge : null} />
+      <Verdict sober={state.mode === 'sober'} drinker={youAreHotSeat || !!mine?.sips} sips={youAreHotSeat ? 1 : (mine?.sips || 0)}
+        challenge={(youAreHotSeat || r.partnerId === me || (state.mode === 'sober' && !!mine?.sips)) ? r.challenge : null} />
 
       <div className="bars small">
         {r.breakdown.map((b, i) => (

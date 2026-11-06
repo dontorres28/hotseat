@@ -52,6 +52,7 @@ for (const [lang, T] of [['de', DE], ['es', ES], ['fr', FR], ['it', IT]]) {
 
 function room4(mode = 'chill') {
   const r = game.createRoom(mode);
+  r.duoChance = 0; // deterministic: exact-sips assertions shouldn't be perturbed by random duos
   const a = game.addPlayer(r, 'Ana', { host: true });
   const b = game.addPlayer(r, 'Ben');
   const c = game.addPlayer(r, 'Cy');
@@ -309,6 +310,24 @@ function room4(mode = 'chill') {
     const pr = rev.results.find((x) => x.name === rev.partnerName);
     assert.ok(pr && pr.sips >= 1, 'the partner drinks too');
   } finally { Math.random = orig; }
+}
+
+// Sober mode: penalties are dares, never drink challenges; no duos.
+{
+  const r = game.createRoom('sober', 'en');
+  const [a, b2, c] = ['Al', 'Bo', 'Cj'].map((n) => game.addPlayer(r, n));
+  game.buildDeck(r);
+  assert.ok(r.deck.length > 0, 'sober deck builds');
+  let drinkWord = false, sawPartner = false;
+  for (let round = 0; round < 12; round++) {
+    game.dealPrompt(r); r.traitorId = null;
+    game.submit(r, a.id, b2.id); game.submit(r, b2.id, c.id); game.submit(r, c.id, b2.id);
+    const rev = game.reveal(r);
+    if (/\b(sip|sips|drink|drinks|shot|beer|chug)\b/i.test(rev.challenge)) drinkWord = true;
+    if (rev.partnerName) sawPartner = true;
+  }
+  assert.ok(!drinkWord, 'sober challenges never mention drinking');
+  assert.ok(!sawPartner, 'sober mode draws no duo partners');
 }
 
 console.log('ok — all game checks passed');

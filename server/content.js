@@ -7,7 +7,7 @@ import ES from './content/es.js';
 import FR from './content/fr.js';
 import IT from './content/it.js';
 
-export const MODES = ['chill', 'roast', 'spicy', 'chaos', 'duel'];
+export const MODES = ['chill', 'roast', 'spicy', 'chaos', 'duel', 'sober'];
 export const CONSENT_MODES = ['spicy', 'chaos'];
 export const LANGS = ['en', 'de', 'es', 'fr', 'it'];
 const LANG_MAP = { en: EN, de: DE, es: ES, fr: FR, it: IT };
@@ -41,7 +41,7 @@ export function packExists(id) { return PACK_META.some((p) => p.id === id); }
 export function promptsForMode(mode, lang) {
   const p = L(lang).prompts;
   if (mode === 'chaos') return [...p.chill, ...p.roast, ...p.spicy];
-  if (mode === 'duel') return [...p.chill, ...p.roast];
+  if (mode === 'duel' || mode === 'sober') return [...p.chill, ...p.roast];
   return p[mode] ?? p.chill;
 }
 
