@@ -17,7 +17,7 @@ const LS_AGE = 'hotseat.age';
 
 // Legal docs (English). Templates — have a lawyer review for your jurisdiction.
 const OPERATOR = 'the HOT SEAT team'; // GDPR "data controller" — swap for a legal entity name once you form one
-const CONTACT = 'hotseat.game@proton.me'; // TODO: create this dedicated inbox (or your own) so data requests actually reach you
+const CONTACT = 'hot-seat.game@proton.me'; // dedicated project inbox for legal / data-protection requests
 const LEGAL = {
   updated: 'Last updated: November 2025',
   terms: {
