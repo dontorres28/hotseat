@@ -65,22 +65,29 @@ export default function App() {
     if (recap) screen = <Recap recap={recap} leave={leave} />;
     else if (state.phase === 'lobby') screen = <Lobby state={state} me={me} isHost={isHost} leave={leave} />;
     else if (state.phase === 'prompt') screen = state.duel
-      ? <DuelRound state={state} me={me} isHost={isHost} />
-      : <Round state={state} me={me} isHost={isHost} secret={secret} />;
+      ? <DuelRound state={state} me={me} isHost={isHost} leave={leave} />
+      : <Round state={state} me={me} isHost={isHost} secret={secret} leave={leave} />;
     else if (state.phase === 'reveal') screen = state.reveal?.duel
-      ? <DuelReveal state={state} me={me} isHost={isHost} />
-      : <Reveal state={state} me={me} isHost={isHost} />;
+      ? <DuelReveal state={state} me={me} isHost={isHost} leave={leave} />
+      : <Reveal state={state} me={me} isHost={isHost} leave={leave} />;
     else screen = <Wordmark />;
-    const inGame = !recap && (state.phase === 'prompt' || state.phase === 'reveal');
-    content = <>{screen}{toast && <Toast t={toast} />}{inGame && <LeaveFloat leave={leave} />}</>;
+    content = <>{screen}{toast && <Toast t={toast} />}</>;
   }
 
   return <LangCtx.Provider value={activeLang}>{content}</LangCtx.Provider>;
 }
 
-function LeaveFloat({ leave }) {
+// In-game top bar: mode emoji left, round centered, Leave right.
+function GameBar({ mode, round, totalRounds, leave }) {
   const T = useT();
-  return <button className="leave-float" onClick={leave}>{T('leave')}</button>;
+  const emoji = (MODES.find((m) => m.id === mode) || {}).emoji || '🎮';
+  return (
+    <div className="gamebar">
+      <span className="tb-mode">{emoji}</span>
+      <span className="tb-round">{T('round', { n: round })} <span className="muted">/ {totalRounds}</span></span>
+      <button className="tb-leave" onClick={leave}>{T('leave')}</button>
+    </div>
+  );
 }
 
 // Shown when you're told to drink — swap the sip for a non-drinking dare.
@@ -314,7 +321,7 @@ function Packs({ packs, isHost }) {
   );
 }
 
-function DuelRound({ state, me, isHost }) {
+function DuelRound({ state, me, isHost, leave }) {
   const T = useT();
   const submitted = state.submittedIds.includes(me);
   const pair = state.pair || [];
@@ -336,7 +343,7 @@ function DuelRound({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: state.round })} <span className="muted">/ {state.totalRounds}</span></span><span className="wild">⚔️ {T('duel')}</span></div>
+      <GameBar mode={state.mode} round={state.round} totalRounds={state.totalRounds} leave={leave} />
       <h2 className="prompt">{state.prompt}</h2>
       <p className="label">{T('tapMoreLikely')}</p>
       <div className="duel">
@@ -351,7 +358,7 @@ function DuelRound({ state, me, isHost }) {
   );
 }
 
-function DuelReveal({ state, me, isHost }) {
+function DuelReveal({ state, me, isHost, leave }) {
   const T = useT();
   const r = state.reveal;
   const youDrink = (r.results.find((x) => x.id === me)?.sips || 0) > 0;
@@ -359,7 +366,7 @@ function DuelReveal({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: r.round })} <span className="muted">/ {state.totalRounds}</span></span><span className="wild">⚔️ {T('duel')}</span></div>
+      <GameBar mode={state.mode} round={r.round} totalRounds={state.totalRounds} leave={leave} />
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
@@ -393,7 +400,7 @@ function DuelReveal({ state, me, isHost }) {
   );
 }
 
-function Round({ state, me, isHost, secret }) {
+function Round({ state, me, isHost, secret, leave }) {
   const T = useT();
   const [vote, setVote] = useState(null);
   const [predict, setPredict] = useState(null);
@@ -419,10 +426,7 @@ function Round({ state, me, isHost, secret }) {
 
   return (
     <div className="screen">
-      <div className="round-head">
-        <span className="round-n">{T('round', { n: state.round })} <span className="muted">/ {state.totalRounds}</span></span>
-        {state.wildcard && <span className="wild">{T('wildcard')}</span>}
-      </div>
+      <GameBar mode={state.mode} round={state.round} totalRounds={state.totalRounds} leave={leave} />
       {state.wildcard && <div className="wild-banner">⚡ {state.wildcard.label}</div>}
       {secret === 'traitor' && <div className="traitor-banner">{T('traitorBanner')}</div>}
       <h2 className="prompt">{state.prompt}</h2>
@@ -450,7 +454,7 @@ function PickGrid({ players, value, onPick, accent }) {
   );
 }
 
-function Reveal({ state, me, isHost }) {
+function Reveal({ state, me, isHost, leave }) {
   const T = useT();
   const r = state.reveal;
   const [picking, setPicking] = useState(false);
@@ -464,7 +468,7 @@ function Reveal({ state, me, isHost }) {
 
   return (
     <div className="screen">
-      <div className="round-head"><span className="round-n">{T('round', { n: r.round })} <span className="muted">/ {state.totalRounds}</span></span></div>
+      <GameBar mode={state.mode} round={r.round} totalRounds={state.totalRounds} leave={leave} />
       <p className="prompt sm">{r.prompt}</p>
 
       <div className="hotseat-card">
