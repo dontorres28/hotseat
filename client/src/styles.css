@@ -261,11 +261,27 @@ body {
 @keyframes grow { from { transform: scaleX(0); } to { transform: scaleX(var(--w, 1)); } }
 .bar-votes { width: 20px; text-align: right; color: var(--muted); font-weight: 700; }
 
-.verdict { border-radius: 16px; padding: 18px; text-align: center; }
-.verdict strong { font-size: 20px; display: block; }
-.verdict p { margin-top: 4px; }
-.verdict.safe { background: #13201a; border: 2px solid #2e5a44; }
-.verdict.drink { background: #231311; border: 2px solid var(--red); }
+/* Big, instant, color-coded verdict — the thing a drunk player reads in half a second. */
+.verdict-hero {
+  border-radius: 18px; padding: 22px 18px; text-align: center;
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  animation: pop 0.45s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+.verdict-hero.safe { background: #122018; border: 3px solid #2f7a50; }
+.verdict-hero.drink { background: #2a0e0b; border: 3px solid var(--red); box-shadow: 0 0 44px rgba(232, 53, 43, 0.3); }
+.vh-emoji { font-size: 48px; line-height: 1; }
+.vh-big {
+  font-family: Anton, sans-serif; font-size: 48px; line-height: 0.9; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--cream); transform: skewX(-4deg);
+}
+.verdict-hero.safe .vh-big { color: #5fd597; }
+.vh-sub { font-size: 17px; font-weight: 700; color: var(--cream); line-height: 1.25; max-width: 92%; }
+.verdict-hero .swap-btn { margin-top: 10px; }
+
+/* Demoted vote bars (secondary info under the verdict) */
+.bars.small { opacity: 0.75; }
+.bars.small .bar-track { height: 16px; }
+.bars.small .bar-name, .bars.small .bar-votes { font-size: 12px; }
 .swap-btn {
   margin-top: 10px; background: transparent; border: none; color: var(--muted);
   font: inherit; font-weight: 700; font-size: 13px; text-decoration: underline; text-underline-offset: 3px;

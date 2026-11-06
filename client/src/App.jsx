@@ -95,6 +95,27 @@ function DareSwap() {
   );
 }
 
+// The one thing a tipsy player must get instantly: drink (how much) or safe.
+function Verdict({ drinker, sips, challenge }) {
+  const T = useT();
+  if (!drinker) {
+    return (
+      <div className="verdict-hero safe">
+        <div className="vh-emoji">✅</div>
+        <div className="vh-big">{T('safeBig')}</div>
+      </div>
+    );
+  }
+  return (
+    <div className="verdict-hero drink">
+      <div className="vh-emoji">{challenge ? '🔥🍺' : '🍺'.repeat(Math.min(sips, 3))}</div>
+      <div className="vh-big">{T('drinkBig')}{!challenge && sips > 1 ? ` ${sips}` : ''}</div>
+      {challenge && <p className="vh-sub">{challenge}</p>}
+      <DareSwap />
+    </div>
+  );
+}
+
 function Toast({ t }) {
   const T = useT();
   return (
@@ -347,7 +368,9 @@ function DuelReveal({ state, me, isHost }) {
         <div className="hotseat-name">{(r.tie ? r.drinkers.join(' & ') : r.targetName)} 🔥</div>
       </div>
 
-      <div className="bars">
+      <Verdict drinker={youDrink} sips={youDrink ? 1 : 0} challenge={youDrink ? r.challenge : null} />
+
+      <div className="bars small">
         {r.pair.map((p, i) => (
           <div key={i} className="bar-row">
             <span className="bar-name">{p.name}</span>
@@ -355,11 +378,6 @@ function DuelReveal({ state, me, isHost }) {
             <span className="bar-votes">{p.votes}</span>
           </div>
         ))}
-      </div>
-
-      <div className={'verdict ' + (youDrink ? 'drink' : 'safe')}>
-        {youDrink ? (<><strong>{T('gotPicked')}</strong><p>{r.challenge}</p></>) : (<><strong>{T('safe')}</strong><p>{T('notYouTime')}</p></>)}
-        {youDrink && <DareSwap />}
       </div>
 
       {isHost ? (
@@ -455,7 +473,10 @@ function Reveal({ state, me, isHost }) {
         <div className="hotseat-name">{r.targetName} 🔥</div>
       </div>
 
-      <div className="bars">
+      <Verdict drinker={youAreHotSeat || !!mine?.sips} sips={youAreHotSeat ? 1 : (mine?.sips || 0)}
+        challenge={youAreHotSeat ? r.challenge : null} />
+
+      <div className="bars small">
         {r.breakdown.map((b, i) => (
           <div key={i} className="bar-row">
             <span className="bar-name">{b.name}</span>
@@ -463,17 +484,6 @@ function Reveal({ state, me, isHost }) {
             <span className="bar-votes">{b.votes}</span>
           </div>
         ))}
-      </div>
-
-      <div className={'verdict ' + (youAreHotSeat || mine?.sips ? 'drink' : 'safe')}>
-        {youAreHotSeat ? (
-          <><strong>{T('youHotSeat')}</strong><p>{r.challenge}</p></>
-        ) : mine?.sips ? (
-          <><strong>{T('misread')}</strong><p>{mine.sips === 2 ? T('takeTwo') : T('takeSip')}</p></>
-        ) : (
-          <><strong>{T('safe')}</strong><p>{T('readRight')}</p></>
-        )}
-        {(youAreHotSeat || mine?.sips) && <DareSwap />}
       </div>
 
       {r.traitor && (

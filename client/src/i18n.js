@@ -51,6 +51,7 @@ const S = {
     damage: "{rounds} rounds. Here's the damage.", damageOne: "{rounds} round. Here's the damage.", colPlayer: 'Player', colReads: 'Reads',
     newGame: 'New game', screenshot: 'Screenshot it. Settle it later.', loading: 'loading…',
     language: 'Language', nobody: 'nobody', roundsLabel: 'Rounds', seeResults: 'See results',
+    drinkBig: 'Drink', safeBig: 'Safe',
   },
   de: {
     tagline: 'Nicht antworten. Errate deine Freunde.',
@@ -92,6 +93,7 @@ const S = {
     damage: '{rounds} Runden. Hier ist der Schaden.', damageOne: '{rounds} Runde. Hier ist der Schaden.', colPlayer: 'Spieler', colReads: 'Treffer',
     newGame: 'Neues Spiel', screenshot: 'Mach einen Screenshot. Klärt es später.', loading: 'lädt…',
     language: 'Sprache', nobody: 'niemand', roundsLabel: 'Runden', seeResults: 'Ergebnisse ansehen',
+    drinkBig: 'Trink', safeBig: 'Sicher',
   },
   es: {
     tagline: 'No respondas. Adivina a tus amigos.',
@@ -133,6 +135,7 @@ const S = {
     damage: '{rounds} rondas. Aquí están los daños.', damageOne: '{rounds} ronda. Aquí están los daños.', colPlayer: 'Jugador', colReads: 'Aciertos',
     newGame: 'Nueva partida', screenshot: 'Haz una captura. Arreglen cuentas después.', loading: 'cargando…',
     language: 'Idioma', nobody: 'nadie', roundsLabel: 'Rondas', seeResults: 'Ver resultados',
+    drinkBig: 'Toma', safeBig: 'A salvo',
   },
   fr: {
     tagline: 'Ne réponds pas. Devine tes amis.',
@@ -174,6 +177,7 @@ const S = {
     damage: '{rounds} tours. Voici les dégâts.', damageOne: '{rounds} tour. Voici les dégâts.', colPlayer: 'Joueur', colReads: 'Lectures',
     newGame: 'Nouvelle partie', screenshot: 'Fais une capture. Réglez ça plus tard.', loading: 'chargement…',
     language: 'Langue', nobody: 'personne', roundsLabel: 'Tours', seeResults: 'Voir les résultats',
+    drinkBig: 'Bois', safeBig: 'Sauvé',
   },
   it: {
     tagline: 'Non rispondere. Indovina i tuoi amici.',
@@ -215,6 +219,7 @@ const S = {
     damage: '{rounds} round. Ecco i danni.', damageOne: '{rounds} round. Ecco i danni.', colPlayer: 'Giocatore', colReads: 'Letture',
     newGame: 'Nuova partita', screenshot: 'Fai uno screenshot. Fate i conti dopo.', loading: 'caricamento…',
     language: 'Lingua', nobody: 'nessuno', roundsLabel: 'Round', seeResults: 'Vedi i risultati',
+    drinkBig: 'Bevi', safeBig: 'Salvo',
   },
 };
 
