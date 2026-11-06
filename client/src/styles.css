@@ -317,9 +317,17 @@ body {
   width: 100%; background: rgba(0, 0, 0, 0.34); border: 1px solid rgba(232, 53, 43, 0.55);
   color: var(--cream); font-weight: 800; font-size: 18px; line-height: 1.3; padding: 15px 16px;
   border-radius: 14px; text-align: center;
-  animation: flip-in 0.5s var(--ease) both; transform-origin: center;
+  transform-origin: 50% 38%; backface-visibility: hidden; will-change: transform, opacity;
+  /* flips up from flat, snaps past, then settles — the satisfying "jump" */
+  animation: flip-in 0.56s cubic-bezier(0.18, 0.9, 0.26, 1) both;
 }
-@keyframes flip-in { from { transform: rotateY(-90deg); opacity: 0; } to { transform: rotateY(0); opacity: 1; } }
+@keyframes flip-in {
+  0%   { transform: rotateX(-82deg) translateY(16px) scale(0.92); opacity: 0; }
+  52%  { opacity: 1; }
+  66%  { transform: rotateX(9deg) translateY(0) scale(1.045); }
+  82%  { transform: rotateX(-3.5deg) scale(0.99); }
+  100% { transform: rotateX(0deg) scale(1); opacity: 1; }
+}
 
 /* Demoted vote bars (secondary info under the verdict) */
 .bars.small { opacity: 0.75; }
