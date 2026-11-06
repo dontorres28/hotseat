@@ -5,9 +5,10 @@ import { CHALLENGES, challengeMinPlayers } from './content.js';
 import EN from './content/en.js';
 import DE from './content/de.js';
 import ES from './content/es.js';
+import FR from './content/fr.js';
 
 // Every translation file must stay index-aligned with English, and a translated room must resolve.
-for (const [lang, T] of [['de', DE], ['es', ES]]) {
+for (const [lang, T] of [['de', DE], ['es', ES], ['fr', FR]]) {
   assert.equal(EN.challenges.length, T.challenges.length, `${lang} challenge counts aligned`);
   assert.equal(EN.dares.length, T.dares.length, `${lang} dare counts aligned`);
   assert.equal(EN.wildcards.length, T.wildcards.length, `${lang} wildcard counts aligned`);
