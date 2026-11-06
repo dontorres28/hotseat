@@ -5,7 +5,8 @@ services:
   - type: web
     name: hotseat
     runtime: node
-    plan: free            # spins down when idle (~30s cold start, live rooms drop). Bump to "starter" for always-on.
+    plan: starter         # always-on (no idle spin-down / cold start). Use "free" only for throwaway testing.
+    healthCheckPath: /health
     buildCommand: npm run build
     startCommand: npm start
     autoDeploy: true

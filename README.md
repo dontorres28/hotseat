@@ -81,9 +81,11 @@ The hobby plan stays always-on (no cold-start/idle spin-down), so live rooms
 don't drop. To split frontend/backend later, host the client anywhere static
 and set `VITE_SERVER_URL` to the backend's URL at build time.
 
-**Render (also works):** the repo also ships a `render.yaml` blueprint
-(**New → Blueprint** → pick repo). The free plan spins down when idle (~30s cold
-start drops live rooms); bump `plan:` to `starter` for always-on.
+**Render:** the repo ships a `render.yaml` blueprint set to the **Starter**
+plan — always-on, no idle spin-down or cold start. On an existing free service,
+upgrade in the dashboard: the `hotseat` service → **Settings → Instance Type →
+Starter**. (Switch `plan:` back to `free` in `render.yaml` only for throwaway
+testing; free sleeps after ~15 min idle and drops live rooms on wake.)
 
 **Moving off Render:** deleting the repo push won't undeploy it — in the Render
 dashboard, open the `hotseat` service → **Settings → Delete Service** (or just
