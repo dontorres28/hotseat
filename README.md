@@ -61,14 +61,33 @@ cd client && npm install && npm run build   # outputs client/dist
 cd ../server && npm install && npm start      # serves dist + sockets on $PORT
 ```
 
-Any Node host (Render, Railway, Fly, a VPS) works. Set `PORT` if the platform
-needs it; sockets use the same port.
+Any **persistent** Node host (Railway, Fly, Render, a VPS) works — it needs a
+long-lived process for the Socket.IO server and its in-memory rooms. Serverless
+platforms (Vercel, Netlify Functions, Cloudflare Workers) can't host the
+realtime backend; use them only for a separate static frontend. Set `PORT` if
+the platform needs it; sockets use the same port.
 
-**Render (one click):** the repo ships a `render.yaml` blueprint. In Render →
-**New → Blueprint** → pick this repo → deploy. It runs `npm run build` (builds
-the client) then `npm start` (serves it + sockets). Defaults to the **free**
-plan, which spins down when idle — bump `plan:` to `starter` in `render.yaml`
-for always-on once you have players.
+**Railway (recommended, one click):** the repo ships `railway.json`.
+
+1. Push to GitHub (already done).
+2. [railway.com](https://railway.com) → **New Project → Deploy from GitHub repo** → pick this repo.
+3. Railway reads `railway.json`: runs `npm run build` (builds the client) then
+   `npm start` (serves the client + Socket.IO on one port, `$PORT` injected).
+   Node is pinned to 22 via `.nvmrc`.
+4. **Settings → Networking → Generate Domain** to get a public URL. WebSockets
+   work on it out of the box. Done.
+
+The hobby plan stays always-on (no cold-start/idle spin-down), so live rooms
+don't drop. To split frontend/backend later, host the client anywhere static
+and set `VITE_SERVER_URL` to the backend's URL at build time.
+
+**Render (also works):** the repo also ships a `render.yaml` blueprint
+(**New → Blueprint** → pick repo). The free plan spins down when idle (~30s cold
+start drops live rooms); bump `plan:` to `starter` for always-on.
+
+**Moving off Render:** deleting the repo push won't undeploy it — in the Render
+dashboard, open the `hotseat` service → **Settings → Delete Service** (or just
+turn off **Auto-Deploy**) once Railway is live.
 
 ## Shipped vs. deferred
 

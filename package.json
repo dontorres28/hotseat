@@ -6,5 +6,8 @@
   "scripts": {
     "build": "npm --prefix client install --include=dev && npm --prefix client run build && npm --prefix server install --omit=dev",
     "start": "npm --prefix server start"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
