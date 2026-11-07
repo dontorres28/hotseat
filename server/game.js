@@ -187,10 +187,15 @@ export function dealPrompt(room) {
     // Two players face off; no wildcard, no traitor.
     const two = shuffled(active).slice(0, 2).map((p) => p.id);
     room.pair = two.length === 2 ? two : null;
+    // The audience judges the duel. 3 players -> 1 judge, 4 -> 2 judges.
+    // With only 2 players there's no audience, so the two decide between them.
+    const audience = active.filter((p) => !two.includes(p.id)).map((p) => p.id);
+    room.voters = audience.length ? audience : two;
     room.wildcard = null;
     room.traitorId = null;
   } else {
     room.pair = null;
+    room.voters = active.map((p) => p.id);
     // Chaos mode (or a 1-in-5 roll) can flip a wildcard rule.
     const roll = room.mode === 'chaos' ? Math.random() < 0.4 : Math.random() < 0.12;
     const wilds = wildcardList(room.lang);
@@ -208,6 +213,7 @@ export function traitorId(room) {
 
 export function submit(room, playerId, voteFor, predict) {
   if (room.mode === 'duel') {
+    if (room.voters && !room.voters.includes(playerId)) return; // contestants don't judge their own duel
     const pair = room.pair || [];
     if (!pair.includes(voteFor)) voteFor = pair[0];
     room.submissions.set(playerId, { voteFor, predict: voteFor });
@@ -225,8 +231,11 @@ export function submit(room, playerId, voteFor, predict) {
 }
 
 export function everyoneSubmitted(room) {
-  const players = activePlayers(room);
-  return players.length > 0 && players.every((p) => room.submissions.has(p.id));
+  // Only the voters need to submit (in duel, the two contestants don't vote).
+  const voters = (room.voters && room.voters.length)
+    ? room.voters.filter((id) => room.players.get(id)?.connected)
+    : activePlayers(room).map((p) => p.id);
+  return voters.length > 0 && voters.every((id) => room.submissions.has(id));
 }
 
 function drawChallenge(room) {
@@ -455,6 +464,7 @@ export function snapshot(room) {
     pair: (room.phase === 'prompt' && room.pair)
       ? room.pair.map((id) => ({ id, name: room.players.get(id)?.name }))
       : null,
+    voterIds: room.phase === 'prompt' ? (room.voters || []) : [],
     submittedIds: room.phase === 'prompt' ? [...room.submissions.keys()] : [],
     reveal: room.phase === 'reveal' ? room.lastReveal : null,
   };
