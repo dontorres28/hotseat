@@ -96,8 +96,14 @@ const BANNED = [
   'fuck', 'motherfucker', 'cunt', 'cock', 'pussy', 'whore', 'slut',
   'fick', 'hure', 'fotze', 'puta', 'mierda', 'putain', 'merde', 'cazzo', 'stronzo',
 ];
-const BANNED_RE = new RegExp('\\b(' + BANNED.join('|') + ')\\b', 'i');
+// Trailing \w* catches suffixed forms (fuck -> fucking/fucked, rape -> rapist).
+const BANNED_RE = new RegExp('\\b(' + BANNED.join('|') + ')\\w*', 'i');
 const escapeRe = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+// Fold accents (fück -> fuck) and strip separators used to slip past the list
+// (f.u.c.k / f u c k) before matching. Blocklists stay inherently bypassable;
+// this just closes the easy evasions.
+const normalizeForScan = (s) =>
+  s.normalize('NFKD').replace(/[̀-ͯ]/g, '').replace(/[^\p{L}\p{N}\s]+/gu, '');
 
 // Returns { text } if clean, or { error } naming why. playerNames blocks
 // questions that single out one person.
@@ -105,7 +111,7 @@ export function validatePrompt(text, playerNames = []) {
   const t = String(text ?? '').replace(/\s+/g, ' ').trim();
   if (t.length < 6) return { error: 'tooShort' };
   if (t.length > 120) return { error: 'tooLong' };
-  if (BANNED_RE.test(t)) return { error: 'offensive' };
+  if (BANNED_RE.test(normalizeForScan(t))) return { error: 'offensive' };
   const names = playerNames.map((n) => String(n).trim()).filter((n) => n.length >= 2);
   if (names.length) {
     const nameRe = new RegExp('\\b(' + names.map(escapeRe).join('|') + ')\\b', 'i');

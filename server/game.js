@@ -30,6 +30,13 @@ function makeId() {
   return Math.random().toString(36).slice(2, 10);
 }
 
+// Private reconnect credential. Unlike the public player id (which is broadcast
+// in every snapshot), this is sent only to the owning socket and is required to
+// resume that identity, so one room member can't take over another.
+function makeToken() {
+  return globalThis.crypto.randomUUID();
+}
+
 function pickTopic(lang) {
   const t = topicsList(lang);
   return t[Math.floor(Math.random() * t.length)];
@@ -78,6 +85,12 @@ export function getRoom(code) {
   return rooms.get(String(code || '').toUpperCase());
 }
 
+// A resume is only allowed if the caller presents the player's private token.
+export function resumeOk(room, playerId, token) {
+  const p = room?.players.get(playerId);
+  return !!(p && token && p.token === token);
+}
+
 // Rebuild the deck from the mode plus any enabled packs. Called at game start
 // so lobby pack choices take effect.
 export function buildDeck(room) {
@@ -106,6 +119,7 @@ export function addPlayer(room, name, { host = false } = {}) {
   const id = makeId();
   const player = {
     id,
+    token: makeToken(), // private; never goes in snapshot()
     name: String(name ?? '').trim().slice(0, 20) || 'Player',
     connected: true,
     consented: !CONSENT_MODES.includes(room.mode),

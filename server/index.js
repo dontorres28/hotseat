@@ -9,7 +9,11 @@ import * as game from './game.js';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: '*' } });
+// In production the server serves the client same-origin, so CORS isn't needed.
+// For a split dev setup (client :5173), allow that origin, overridable via env.
+const io = new Server(httpServer, {
+  cors: { origin: process.env.CORS_ORIGIN || 'http://localhost:5173' },
+});
 
 app.get('/health', (_req, res) => res.json({ ok: true }));
 
@@ -39,17 +43,29 @@ io.on('connection', (socket) => {
     bound = { code: room.code, playerId: player.id };
     player.socketId = socket.id;
     socket.join(room.code);
-    socket.emit('joined', { code: room.code, playerId: player.id, you: player.id });
+    // token is the private reconnect credential — sent only to this socket.
+    socket.emit('joined', { code: room.code, playerId: player.id, you: player.id, token: player.token });
     broadcast(room);
+  };
+
+  // Leave whatever room this socket currently holds. Prevents one socket from
+  // accumulating rooms (each createRoom/joinRoom releases the previous one),
+  // so abandoned rooms can't leak and exhaust the global room cap.
+  const releaseCurrent = () => {
+    if (!bound) return;
+    const room = game.getRoom(bound.code);
+    if (room) { game.removePlayer(room, bound.playerId); socket.leave(room.code); afterLeave(room); }
+    bound = null;
   };
 
   socket.on('createRoom', ({ name, mode, lang }, ack) => {
     if (!MODES.includes(mode)) mode = 'chill';
     if (!isLang(lang)) lang = 'en';
+    releaseCurrent();
     const room = game.createRoom(mode, lang);
     if (!room) return ack?.({ ok: false, error: 'busy' });
     const player = game.addPlayer(room, name, { host: true });
-    ack?.({ ok: true, code: room.code, playerId: player.id });
+    ack?.({ ok: true, code: room.code, playerId: player.id, token: player.token });
     join(room, player);
   });
 
@@ -58,16 +74,17 @@ io.on('connection', (socket) => {
     if (!room) return ack?.({ ok: false, error: 'no_room' });
     if (room.phase !== 'lobby') return ack?.({ ok: false, error: 'started' });
     if (game.roomFull(room)) return ack?.({ ok: false, error: 'full' });
+    releaseCurrent();
     const player = game.addPlayer(room, name);
-    ack?.({ ok: true, code: room.code, playerId: player.id });
+    ack?.({ ok: true, code: room.code, playerId: player.id, token: player.token });
     join(room, player);
   });
 
-  // Reconnect / rejoin after a refresh.
-  socket.on('resume', ({ code, playerId }, ack) => {
+  // Reconnect / rejoin after a refresh. Requires the private token (F1).
+  socket.on('resume', ({ code, playerId, token }, ack) => {
     const room = game.getRoom(code);
     const player = room?.players.get(playerId);
-    if (!room || !player) return ack?.({ ok: false });
+    if (!room || !player || !game.resumeOk(room, playerId, token)) return ack?.({ ok: false });
     player.connected = true;
     if (room.emptyTimer) { clearTimeout(room.emptyTimer); room.emptyTimer = null; }
     ack?.({ ok: true });
