@@ -443,3 +443,8 @@ input, textarea, select { -webkit-user-select: text; user-select: text; }
 .legal-updated { color: var(--muted); font-size: 12px; margin: 4px 0 16px; }
 .legal-p { color: var(--cream); font-size: 14px; line-height: 1.5; margin-bottom: 12px; opacity: 0.9; }
 .legal-disclaimer { color: var(--muted); font-size: 12px; font-style: italic; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 6px; }
+
+/* Duel: the two contestants wait while the room (audience) judges. */
+.duel-wait { display: flex; flex-direction: column; align-items: center; gap: 14px; margin-top: 46px; text-align: center; }
+.duel-vs { font-size: 88px; line-height: 1; animation: pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both; }
+.duel-names { font-family: Anton, sans-serif; font-size: 38px; color: var(--red); text-transform: uppercase; transform: skewX(-5deg); line-height: 1.05; }

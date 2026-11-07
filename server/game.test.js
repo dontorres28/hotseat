@@ -330,4 +330,35 @@ function room4(mode = 'chill') {
   assert.ok(!sawPartner, 'sober mode draws no duo partners');
 }
 
+// Duel adapts to player count: the audience judges, contestants don't vote.
+{
+  // 3 players -> 2 duel, 1 judge.
+  const r = game.createRoom('duel');
+  const a = game.addPlayer(r, 'A'), b = game.addPlayer(r, 'B'), c = game.addPlayer(r, 'C');
+  game.dealPrompt(r);
+  r.pair = [a.id, b.id]; r.voters = [c.id]; // force: C is the lone judge
+  game.submit(r, a.id, b.id); // a contestant tries to vote
+  assert.ok(!game.everyoneSubmitted(r), "a contestant's vote is ignored");
+  game.submit(r, c.id, a.id); // the judge decides
+  assert.ok(game.everyoneSubmitted(r), 'one judge is enough in a 3-player duel');
+  const rev = game.reveal(r);
+  assert.equal(rev.targetName, 'A', 'the judge decided A');
+  assert.ok(!rev.tie, 'a single judge never ties');
+}
+{
+  // 2 players -> no audience, so both decide.
+  const r = game.createRoom('duel');
+  game.addPlayer(r, 'A'); game.addPlayer(r, 'B');
+  game.dealPrompt(r);
+  assert.equal(r.voters.length, 2, '2-player duel: both players vote');
+}
+{
+  // 4 players -> 2 duel, 2 judges.
+  const r = game.createRoom('duel');
+  ['A','B','C','D'].forEach((n) => game.addPlayer(r, n));
+  game.dealPrompt(r);
+  assert.equal(r.pair.length, 2, '4-player duel has a 2-person pair');
+  assert.equal(r.voters.length, 2, '4-player duel: the other 2 judge');
+}
+
 console.log('ok — all game checks passed');

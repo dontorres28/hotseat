@@ -505,16 +505,34 @@ function DuelRound({ state, me, isHost, leave }) {
   const T = useT();
   const submitted = state.submittedIds.includes(me);
   const pair = state.pair || [];
-  const players = state.players.filter((p) => p.connected);
+  const voters = state.voterIds || [];
+  const iVote = voters.length === 0 || voters.includes(me);
+  const total = voters.length || state.players.filter((p) => p.connected).length;
   const done = state.submittedIds.length;
+
+  // Contestant in a 3-4 player duel: you're in the matchup, the room judges.
+  if (!iVote) {
+    return (
+      <div className="screen">
+        <GameBar mode={state.mode} round={state.round} totalRounds={state.totalRounds} leave={leave} />
+        <p className="prompt sm">{state.prompt}</p>
+        <div className="duel-wait">
+          <div className="duel-vs">⚔️</div>
+          <div className="duel-names">{pair.map((p) => p.name).join('  vs  ')}</div>
+          <p className="locked">{T('inTheDuel')}</p>
+          <p className="muted">{T('roomDecides')} ({done}/{total})</p>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (
       <div className="screen center">
         <Logo small />
         <p className="locked">{T('lockedIn')}</p>
-        <p className="muted">{T('voted', { done, total: players.length })}</p>
-        {isHost && done < players.length && (
+        <p className="muted">{T('voted', { done, total })}</p>
+        {isHost && done < total && (
           <button className="btn ghost" onClick={() => socket.emit('revealNow')}>{T('skip')}</button>
         )}
       </div>
@@ -533,7 +551,7 @@ function DuelRound({ state, me, isHost, leave }) {
           </button>
         ))}
       </div>
-      <p className="muted center">{T('voted', { done, total: players.length })}</p>
+      <p className="muted center">{T('voted', { done, total })}</p>
     </div>
   );
 }
