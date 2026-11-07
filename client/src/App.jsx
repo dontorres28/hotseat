@@ -69,9 +69,10 @@ export default function App() {
   const confirmAge = () => { try { localStorage.setItem(LS_AGE, '1'); } catch { /* ignore */ } setAgeOk(true); };
 
   useEffect(() => {
-    socket.on('joined', ({ code, playerId }) => {
+    socket.on('joined', ({ code, playerId, token }) => {
       setMe(playerId); setRecap(null);
-      localStorage.setItem(LS, JSON.stringify({ code, playerId }));
+      // token is the private reconnect credential required by resume.
+      localStorage.setItem(LS, JSON.stringify({ code, playerId, token }));
     });
     socket.on('state', (s) => {
       setState(s);

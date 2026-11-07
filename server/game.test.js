@@ -1,7 +1,7 @@
 // Run: node game.test.js  — plain asserts, no framework.
 import assert from 'node:assert';
 import * as game from './game.js';
-import { CHALLENGES, challengeMinPlayers } from './content.js';
+import { CHALLENGES, challengeMinPlayers, validatePrompt } from './content.js';
 import EN from './content/en.js';
 import DE from './content/de.js';
 import ES from './content/es.js';
@@ -359,6 +359,28 @@ function room4(mode = 'chill') {
   game.dealPrompt(r);
   assert.equal(r.pair.length, 2, '4-player duel has a 2-person pair');
   assert.equal(r.voters.length, 2, '4-player duel: the other 2 judge');
+}
+
+{
+  // F1: resume requires the player's private token, which never leaks in snapshot.
+  const r = game.createRoom('chill');
+  const a = game.addPlayer(r, 'A', { host: true });
+  const b = game.addPlayer(r, 'B');
+  assert.ok(a.token && b.token && a.token !== b.token, 'each player gets a unique token');
+  const snap = game.snapshot(r);
+  assert.ok(snap.players.every((p) => !('token' in p)), 'snapshot never exposes tokens');
+  assert.ok(game.resumeOk(r, a.id, a.token), 'correct token resumes');
+  assert.ok(!game.resumeOk(r, a.id, b.token), 'another player\'s token cannot resume you');
+  assert.ok(!game.resumeOk(r, a.id, undefined), 'no token cannot resume');
+  assert.ok(!game.resumeOk(r, 'nope', a.token), 'unknown player cannot resume');
+}
+{
+  // F4: profanity filter catches suffixes, accents, and punctuation evasion.
+  const clean = ['Alice', 'Bob'];
+  assert.equal(validatePrompt('who is more likely to go fucking wild', clean).error, 'offensive', 'suffixed form blocked');
+  assert.equal(validatePrompt('who would be the rapist of the group', clean).error, 'offensive', 'rape stem blocked');
+  assert.equal(validatePrompt('who says f.u.c.k the most', clean).error, 'offensive', 'punctuation evasion blocked');
+  assert.ok(!validatePrompt('who is most likely to travel the world', clean).error, 'clean prompt passes');
 }
 
 console.log('ok — all game checks passed');
